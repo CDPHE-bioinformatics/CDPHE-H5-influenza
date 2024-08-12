@@ -134,7 +134,7 @@ workflow h5 {
         Array[Array[File]] task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data, sample_qc_file_raw.summary_metrics]),
                             flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data, sample_qc_file_clean.summary_metrics]),
                             flatten([seqyclean.PE1, seqyclean.PE2])]
-    
+
         call transfer as transfer_primer_tasks {
             input:
                 out_dir = primer_outdir,
@@ -157,9 +157,12 @@ task transfer {
     }
 
     Array[Int] indexes = range(length(task_dirs))
-
+    # Have to re-declare variables in bash due to syntax clash
     command <<<
-        for i in "${!indexes[@]}"; do gsutil -m cp "${task_files[$i]} ~{out_dir}${task_dirs[$i]}/"; done;
+        indexes_bash=(~{sep(' ', indexes)})
+        task_dirs_bash=(~{sep(' ', task_dirs)})
+        task_files_bash=(~{sep(' ', task_files)})
+        for i in "${!indexes_bash[@]}"; do gsutil -m cp "${task_files_bash[$i]}" "~{out_dir}${task_dirs_bash[$i]}/"; done;
     >>>
     runtime {
         #cpu: ,
@@ -209,8 +212,8 @@ task fastqc {
 
     command <<<
         fastqc --extract --delete ~{sample.fastq1} ~{sample.fastq2}
-        cp "_miniwdl_inputs/0/~{fastq1_name}_fastqc/fastqc_data.txt" "~{fastq1_name}_fastqc_data.txt"
-        cp "_miniwdl_inputs/0/~{fastq2_name}_fastqc/fastqc_data.txt" "~{fastq2_name}_fastqc_data.txt"
+        cp "~{sample.name}_R1_fastqc/fastqc_data.txt" "~{fastq1_name}_fastqc_data.txt"
+        cp "~{sample.name}_R2_fastqc/fastqc_data.txt" "~{fastq2_name}_fastqc_data.txt"
         fastqc --version | awk '/FastQC/ {print $2}' | tee VERSION    
         >>>
 
