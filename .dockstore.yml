@@ -1,7 +1,5 @@
 version: 1.2
 workflows:
   - subclass: WDL
-
-
-
-          
+    primaryDescriptorPath: h5_testing.wdl
+    readMePath: README.md
