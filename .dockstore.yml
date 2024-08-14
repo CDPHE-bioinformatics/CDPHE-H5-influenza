@@ -1,5 +1,8 @@
 version: 1.2
 workflows:
-  - subclass: WDL
-    primaryDescriptorPath: /h5_testing.wdl
-    readMePath: /README.md
+ - name: h5_structs
+   subclass: WDL
+   primaryDescriptorPath: /h5_structs.wdl
+ - name: h5_testing
+   subclass: WDL
+   primaryDescriptorPath: /h5_testing.wdl
