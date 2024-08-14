@@ -23,10 +23,6 @@ workflow h5 {
     
         # Whole genome references
         File bovine_texas_029328_01_UtoT_fasta
-
-        # temporary because seqyclean is slow
-        Array[File] clean_fastq1s
-        Array[File] clean_fastq2s
     }
 
     # private declarations
