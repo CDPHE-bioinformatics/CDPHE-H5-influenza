@@ -136,10 +136,12 @@ workflow h5 {
         }
 
         Array[String] task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean"]
-        Array[Array[File]] task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data, sample_qc_file_raw.summary_metrics]),
-                            flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data, sample_qc_file_clean.summary_metrics]),
+        # Array[Array[File]] task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data, sample_qc_file_raw.summary_metrics]),
+        #                     flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data, sample_qc_file_clean.summary_metrics]),
+        #                     flatten([seqyclean.PE1, seqyclean.PE2])]
+        Array[Array[File]] task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
+                            flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
                             flatten([seqyclean.PE1, seqyclean.PE2])]
-
         call transfer as transfer_primer_tasks {
             input:
                 out_dir = primer_outdir,
