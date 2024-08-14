@@ -194,7 +194,6 @@ task multiqc {
     runtime {
         #cpu: ,
         #memory: ,
-        maxRetries: 0,
         docker: docker
     }
 }
@@ -226,7 +225,6 @@ task fastqc {
     runtime {
         #cpu: ,
         #memory: ,
-        maxRetries: 0,
         docker: docker
     }
 }
