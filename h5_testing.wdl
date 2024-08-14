@@ -105,18 +105,11 @@ workflow h5 {
                     docker = fastqc_docker
             }
 
-            call unzip_fastqc as unzip_fastqc_raw {
-                input:
-                    fastqc1_zip = fastqc_raw.fastqc1_zip,
-                    fastqc2_zip = fastqc_raw.fastqc2_zip,
-                    docker = utility_docker
-            }
-
             # call sample_qc_file as sample_qc_file_raw {
             #     input: 
             #         sample_name = samp.name,
-            #         fastqc1_data = unzip_fastqc_raw.fastqc1_data,
-            #         fastqc2_data = unzip_fastqc_raw.fastqc2_data,
+            #         fastqc1_data = fastqc_raw.fastqc1_data,
+            #         fastqc2_data = fastqc_raw.fastqc2_data,
             #         docker = python_docker
             # }
             
@@ -135,28 +128,21 @@ workflow h5 {
                     docker = fastqc_docker
             }
 
-            call unzip_fastqc as unzip_fastqc_clean {
-                input:
-                    fastqc1_zip = fastqc_clean.fastqc1_zip,
-                    fastqc2_zip = fastqc_clean.fastqc2_zip,
-                    docker = utility_docker
-            }
-
             # call sample_qc_file as sample_qc_file_clean {
             #     input: 
             #         sample_name = samp.name,
-            #         fastqc1_data = unzip_fastqc_clean.fastqc1_data,
-            #         fastqc2_data = unzip_fastqc_clean.fastqc2_data,
+            #         fastqc1_data = fastqc_clean.fastqc1_data,
+            #         fastqc2_data = fastqc_clean.fastqc2_data,
             #         docker = python_docker
             # }
         }
 
         Array[String] task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean"]
-        # Array[Array[File]] task_files = [flatten([unzip_fastqc_raw.fastqc1_data, unzip_fastqc_raw.fastqc2_data, sample_qc_file_raw.summary_metrics]),
-        #                     flatten([unzip_fastqc_clean.fastqc1_data, unzip_fastqc_clean.fastqc2_data, sample_qc_file_clean.summary_metrics]),
+        # Array[Array[File]] task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data, sample_qc_file_raw.summary_metrics]),
+        #                     flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data, sample_qc_file_clean.summary_metrics]),
         #                     flatten([seqyclean.PE1, seqyclean.PE2])]
-        Array[Array[File]] task_files = [flatten([unzip_fastqc_raw.fastqc1_data, unzip_fastqc_raw.fastqc2_data]),
-                            flatten([unzip_fastqc_clean.fastqc1_data, unzip_fastqc_clean.fastqc2_data]),
+        Array[Array[File]] task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
+                            flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
                             flatten([seqyclean.PE1, seqyclean.PE2])]
         call transfer as transfer_primer_tasks {
             input:
@@ -234,42 +220,16 @@ task fastqc {
     String fastq2_name = basename(fastq2, ".fastq.gz")
 
     command <<<
-        fastqc ~{sample.fastq1} ~{sample.fastq2}
-        fastqc --version | awk '/FastQC/ {print $2}' | tee VERSION    
+        fastqc --outdir $PWD --extract --delete ~{sample.fastq1} ~{sample.fastq2}
+        fastqc --version | awk '/FastQC/ {print $2}' | tee VERSION  
+        cp "~{fastq1_name}_fastqc/fastqc_data.txt" "~{fastq1_name}_fastqc_data.txt"
+        cp "~{fastqc_name}_fastqc/fastqc_data.txt" "~{fastq2_name}_fastqc_data.txt"  
     >>>
 
     output {
-        File fastqc1_zip = "~{fastq1_name}_fastqc.zip"
-        File fastqc2_zip = "~{fastq2_name}_fastqc.zip"
+        File fastqc1_data = "~{fastq1_name}_fastqc_data.txt"
+        File fastqc2_data = "~{fastq2_name}_fastqc_data.txt"
         String version = read_string('VERSION')
-    }
-
-    runtime {
-        #cpu: ,
-        #memory: ,
-        docker: docker
-    }
-}
-
-task unzip_fastqc {
-    input {
-        File fastqc1_zip
-        File fastqc2_zip
-        String docker
-    }
-
-    String fastqc1_name = basename(fastqc1_zip, ".zip")
-    String fastqc2_name = basename(fastqc2_zip, ".zip")
-    
-    command <<<
-        unzip ~{fastqc1_zip} ~{fastqc2_zip}
-        cp "_~{fastqc1_name}/fastqc_data.txt" "~{fastqc1_name}_data.txt"
-        cp "~{fastqc2_name}/fastqc_data.txt" "~{fastqc2_name}_data.txt"
-    >>>
-
-    output {
-        File fastqc1_data = "~{fastqc1_name}_data.txt"
-        File fastqc2_data = "~{fastqc2_name}_data.txt"
     }
 
     runtime {
