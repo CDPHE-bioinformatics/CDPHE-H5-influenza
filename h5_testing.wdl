@@ -2,6 +2,14 @@ version development
 
 import "h5_structs.wdl" as sub
 
+struct Sample {
+    String name
+    String primer
+    File fastq1
+    File fastq2 
+    Int i
+}
+
 workflow h5 {
     input {
         Array[String] primers

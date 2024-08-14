@@ -1,13 +1,5 @@
 version development
 
-struct Sample {
-    String name
-    String primer
-    File fastq1
-    File fastq2 
-    Int i
-}
-
 struct Reference {
     String name
     File fasta
