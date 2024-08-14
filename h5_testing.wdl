@@ -1,4 +1,4 @@
-version development
+version 1.0
 
 import "h5_structs.wdl" as sub
 
@@ -60,12 +60,12 @@ workflow h5 {
 
     # Scatter samples to create structs
     scatter (idx in indexes) {
-        Sample sample = Sample {
-            name: samples[idx],
-            primer: primers[idx],
-            fastq1: fastq1s[idx],
-            fastq2: fastq2s[idx],
-            i: idx
+        Sample sample = {
+            "name": samples[idx],
+            "primer": primers[idx],
+            "fastq1": fastq1s[idx],
+            "fastq2": fastq2s[idx],
+            "i": idx
         }
     }
 
@@ -73,10 +73,10 @@ workflow h5 {
     # Group samples by primer
     scatter (ps in s.primer_schemes) {
         
-        scatter (samp in all_samples) {
-            if (samp.primer == ps.name) {
-                Sample primer_sample = samp
-                Int match_index = samp.i
+        scatter (all_samp in all_samples) {
+            if (all_samp.primer == ps.name) {
+                Sample primer_sample = all_samp
+                Int match_index = all_samp.i
             }
         }
 
@@ -86,9 +86,10 @@ workflow h5 {
             Array[Int] index_matches = select_all(match_index)
             Array[Sample] primer_samples = select_all(primer_sample)
         }        
-        # if !(primer_sample_matches) {
-        #     call exit_wdl {input: exit_reason = "primer not used"}
-        # }
+
+        if !(primer_sample_matches) {
+            call exit_wdl {input: exit_reason = "primer not used"}
+        }
 
         String primer_outdir = project_outdir + ps.name +"/"
         # Call primer level tasks
@@ -163,9 +164,9 @@ task transfer {
     Array[Int] indexes = range(length(task_dirs))
     # Have to re-declare variables in bash due to syntax clash
     command <<<
-        indexes_bash=(~{sep(' ', indexes)})
-        task_dirs_bash=(~{sep(' ', task_dirs)})
-        task_files_bash=(~{sep(' ', task_files)})
+        indexes_bash=(~{sep=' ' indexes})
+        task_dirs_bash=(~{sep=' ' task_dirs})
+        task_files_bash=(~{sep=' ' task_files})
         for i in "${!indexes_bash[@]}"; do gsutil -m cp "${task_files_bash[$i]}" "~{out_dir}${task_dirs_bash[$i]}/"; done;
     >>>
     runtime {
@@ -187,8 +188,8 @@ task multiqc {
 
     command <<<
         mkdir ~{fastq_dir}
-        cp ~{sep(' ', fastq1s)} ~{fastq_dir}
-        cp ~{sep(' ', fastq2s)} ~{fastq_dir}
+        cp ~{sep=' ' fastq1s} ~{fastq_dir}
+        cp ~{sep=' ' fastq2s} ~{fastq_dir}
         multiqc ~{fastq_dir} --outdir
     >>>
 
@@ -198,7 +199,6 @@ task multiqc {
     runtime {
         #cpu: ,
         #memory: ,
-        maxRetries: 0,
         docker: docker
     }
 }
@@ -231,7 +231,6 @@ task fastqc {
     runtime {
         #cpu: ,
         #memory: ,
-        maxRetries: 0,
         docker: docker
     }
 }
@@ -490,28 +489,6 @@ task concat_all_samples_metrics {
         #memory: ,
         docker: docker
     }
-}
-
-
-
-task echo_things {
-    input {
-        String out_dir
-        String sample_name
-        String sample_primer_scheme
-        PrimerScheme? primer_scheme
-        String fastq1
-        String fastq2
-        }
-
-    command <<<
-        echo ~{out_dir}
-        echo ~{sample_name}
-        echo "~{sample_primer_scheme} should match ~{primer_scheme.name}"
-        echo ~{fastq1}
-        echo ~{fastq2}
-    >>>
-
 }
 
 task exit_wdl {
