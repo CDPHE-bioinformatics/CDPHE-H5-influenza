@@ -81,15 +81,13 @@ workflow h5 {
         }
 
         Boolean primer_sample_matches = defined(primer_sample)
-        if (primer_sample_matches) {
-            # This first line is only included because the following fails without it?
-            Array[Int] index_matches = select_all(match_index)
-            Array[Sample] primer_samples = select_all(primer_sample)
-        }        
-
         if (!primer_sample_matches) {
             call exit_wdl {input: exit_reason = "primer not used"}
-        }
+        }        
+
+        # This first line is only included because the following fails without it?
+        Array[Int] index_matches = select_all(match_index)
+        Array[Sample] primer_samples = select_all(primer_sample)
 
         String primer_outdir = project_outdir + ps.name +"/"
         # Call primer level tasks
