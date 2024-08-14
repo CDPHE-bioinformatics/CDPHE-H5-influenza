@@ -174,7 +174,7 @@ task transfer {
         task_files_bash_array=()
         for f in ${task_files_bash//,/ }
         do 
-            files="~{sep(' ', f)}"
+            files="~{sep(' ', $f)}"
             task_files_bash_array+=("$files")
         for i in "${!indexes_bash[@]}"; 
         do 
