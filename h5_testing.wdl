@@ -1,4 +1,4 @@
-version development
+version development-1.1
 
 import "h5_structs.wdl" as sub
 
