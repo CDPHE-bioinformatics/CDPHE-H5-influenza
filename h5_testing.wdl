@@ -223,8 +223,8 @@ task fastqc {
     command <<<
         fastqc --extract --delete ~{sample.fastq1} ~{sample.fastq2}
         echo "$PWD"
-        cp "_miniwdl_inputs/0/~{sample.name}_R1_fastqc/fastqc_data.txt" "~{fastq1_name}_fastqc_data.txt"
-        cp "_miniwdl_inputs/0/~{sample.name}_R2_fastqc/fastqc_data.txt" "~{fastq2_name}_fastqc_data.txt"
+        cp "~{sample.name}_R1_fastqc/fastqc_data.txt" "~{fastq1_name}_fastqc_data.txt"
+        cp "~{sample.name}_R2_fastqc/fastqc_data.txt" "~{fastq2_name}_fastqc_data.txt"
         fastqc --version | awk '/FastQC/ {print $2}' | tee VERSION    
         >>>
 
