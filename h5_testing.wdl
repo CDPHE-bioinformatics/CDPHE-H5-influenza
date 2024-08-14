@@ -1,4 +1,4 @@
-version 1.0
+version development
 
 import "h5_structs.wdl" as sub
 
@@ -56,7 +56,7 @@ workflow h5 {
 
     # Scatter samples to create structs
     scatter (idx in indexes) {
-        Sample sample = {
+        Sample sample = Sample {
             "name": samples[idx],
             "primer": primers[idx],
             "fastq1": fastq1s[idx],
@@ -160,9 +160,9 @@ task transfer {
     Array[Int] indexes = range(length(task_dirs))
     # Have to re-declare variables in bash due to syntax clash
     command <<<
-        indexes_bash=(~{sep=' ' indexes})
-        task_dirs_bash=(~{sep=' ' task_dirs})
-        task_files_bash=(~{sep=' ' task_files})
+        indexes_bash=(~{sep(' ', indexes)})
+        task_dirs_bash=(~{sep(' ', task_dirs)})
+        task_files_bash=(~{sep(' ', task_files)})
         for i in "${!indexes_bash[@]}"; do gsutil -m cp "${task_files_bash[$i]}" "~{out_dir}${task_dirs_bash[$i]}/"; done;
     >>>
     runtime {
@@ -184,8 +184,8 @@ task multiqc {
 
     command <<<
         mkdir ~{fastq_dir}
-        cp ~{sep=' ' fastq1s} ~{fastq_dir}
-        cp ~{sep=' ' fastq2s} ~{fastq_dir}
+        cp ~{sep(' ', fastq1s)} ~{fastq_dir}
+        cp ~{sep(' ', fastq2s)} ~{fastq_dir}
         multiqc ~{fastq_dir} --outdir
     >>>
 

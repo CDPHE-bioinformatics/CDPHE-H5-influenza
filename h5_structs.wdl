@@ -1,4 +1,4 @@
-version 1.0
+version development
 
 struct Sample {
     String name
