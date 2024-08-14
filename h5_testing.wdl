@@ -170,8 +170,11 @@ task transfer {
     command <<<
         indexes_bash=(~{sep(' ', indexes)})
         task_dirs_bash=(~{sep(' ', task_dirs)})
-        task_files_bash=(~{sep(' ', task_files)})
-        for i in "${!indexes_bash[@]}"; do gsutil -m cp "${task_files_bash[$i]}" "~{out_dir}${task_dirs_bash[$i]}/"; done;
+        for i in "${!indexes_bash[@]}"; 
+        do 
+            task_files_bash="~{sep(' ', task_files)}"
+            gsutil -m cp "${task_files_bash[$i]}" "~{out_dir}${task_dirs_bash[$i]}/"; 
+        done;
     >>>
     runtime {
         #cpu: ,
