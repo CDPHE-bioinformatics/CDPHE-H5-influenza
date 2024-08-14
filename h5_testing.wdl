@@ -9,7 +9,7 @@ workflow h5 {
         Array[File] fastq1s
         Array[File] fastq2s
         String project_name
-        String gs_dir = 'gs://arianna_sandbox/h5'
+        String gs_dir
         File contaminants_fasta
         File human_h5_250_bed
         File houston_bed
@@ -23,6 +23,10 @@ workflow h5 {
     
         # Whole genome references
         File bovine_texas_029328_01_UtoT_fasta
+
+        # temporary because seqyclean is slow
+        Array[File] clean_fastq1s
+        Array[File] clean_fastq2s
     }
 
     # private declarations
@@ -194,6 +198,7 @@ task multiqc {
     runtime {
         #cpu: ,
         #memory: ,
+        maxRetries: 0,
         docker: docker
     }
 }
@@ -211,8 +216,9 @@ task fastqc {
 
     command <<<
         fastqc --extract --delete ~{sample.fastq1} ~{sample.fastq2}
-        cp "~{sample.name}_R1_fastqc/fastqc_data.txt" "~{fastq1_name}_fastqc_data.txt"
-        cp "~{sample.name}_R2_fastqc/fastqc_data.txt" "~{fastq2_name}_fastqc_data.txt"
+        echo "$PWD"
+        cp "_miniwdl_inputs/0/~{sample.name}_R1_fastqc/fastqc_data.txt" "~{fastq1_name}_fastqc_data.txt"
+        cp "_miniwdl_inputs/0/~{sample.name}_R2_fastqc/fastqc_data.txt" "~{fastq2_name}_fastqc_data.txt"
         fastqc --version | awk '/FastQC/ {print $2}' | tee VERSION    
         >>>
 
@@ -225,6 +231,7 @@ task fastqc {
     runtime {
         #cpu: ,
         #memory: ,
+        maxRetries: 0,
         docker: docker
     }
 }
