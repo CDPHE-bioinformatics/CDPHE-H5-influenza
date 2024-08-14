@@ -57,11 +57,11 @@ workflow h5 {
     # Scatter samples to create structs
     scatter (idx in indexes) {
         Sample sample = Sample {
-            "name": samples[idx],
-            "primer": primers[idx],
-            "fastq1": fastq1s[idx],
-            "fastq2": fastq2s[idx],
-            "i": idx
+            name: samples[idx],
+            primer: primers[idx],
+            fastq1: fastq1s[idx],
+            fastq2: fastq2s[idx],
+            i: idx
         }
     }
 
