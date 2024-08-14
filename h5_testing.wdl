@@ -210,7 +210,6 @@ task multiqc {
 
 task fastqc {
     input {
-        Sample sample
         File fastq1
         File fastq2
         String docker
@@ -220,7 +219,7 @@ task fastqc {
     String fastq2_name = basename(fastq2, ".fastq.gz")
 
     command <<<
-        fastqc --outdir $PWD --extract --delete ~{sample.fastq1} ~{sample.fastq2}
+        fastqc --outdir $PWD --extract --delete ~{fastq1} ~{fastq2}
         fastqc --version | awk '/FastQC/ {print $2}' | tee VERSION  
         cp "~{fastq1_name}_fastqc/fastqc_data.txt" "~{fastq1_name}_fastqc_data.txt"
         cp "~{fastq2_name}_fastqc/fastqc_data.txt" "~{fastq2_name}_fastqc_data.txt"  
