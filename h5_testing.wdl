@@ -87,7 +87,7 @@ workflow h5 {
             Array[Sample] primer_samples = select_all(primer_sample)
         }        
 
-        if !(primer_sample_matches) {
+        if (!primer_sample_matches) {
             call exit_wdl {input: exit_reason = "primer not used"}
         }
 
