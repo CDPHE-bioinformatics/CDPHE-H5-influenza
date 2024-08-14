@@ -221,10 +221,10 @@ task fastqc {
         String fastq2_name = basename(fastq2, ".fastq.gz")
 
     command <<<
-        fastqc --extract --delete ~{sample.fastq1} ~{sample.fastq2}
-        echo "$PWD"
-        cp "~{sample.name}_R1_fastqc/fastqc_data.txt" "~{fastq1_name}_fastqc_data.txt"
-        cp "~{sample.name}_R2_fastqc/fastqc_data.txt" "~{fastq2_name}_fastqc_data.txt"
+        fastqc ~{sample.fastq1} ~{sample.fastq2}
+        unzip "*.zip"
+        cp "~{fastq1_name}_fastqc/fastqc_data.txt" "~{fastq1_name}_fastqc_data.txt"
+        cp "~{fastq2_name}_fastqc/fastqc_data.txt" "~{fastq2_name}_fastqc_data.txt"
         fastqc --version | awk '/FastQC/ {print $2}' | tee VERSION    
         >>>
 
