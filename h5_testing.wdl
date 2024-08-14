@@ -99,7 +99,6 @@ workflow h5 {
             # Call sample level tasks
             call fastqc as fastqc_raw {
                 input: 
-                    sample = samp, 
                     fastq1 = samp.fastq1, 
                     fastq2 = samp.fastq2, 
                     docker = fastqc_docker
@@ -122,7 +121,6 @@ workflow h5 {
 
             call fastqc as fastqc_clean {
                 input: 
-                    sample = samp, 
                     fastq1 = seqyclean.PE1, 
                     fastq2 = seqyclean.PE2, 
                     docker = fastqc_docker
