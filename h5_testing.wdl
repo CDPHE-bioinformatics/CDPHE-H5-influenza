@@ -11,6 +11,7 @@ workflow h5 {
         String project_name
         String gs_dir
         File contaminants_fasta
+        File human_h5_200_bed
         File human_h5_250_bed
         File houston_bed
         File AVRL_H5N1_250bp_bed
@@ -49,6 +50,7 @@ workflow h5 {
             victoria_4897_2022_h1n1_ha_h1_fasta = victoria_4897_2022_h1n1_ha_h1_fasta,
             vietnam_1203_2024_h5n1_ha_v2_fasta = vietnam_1203_2024_h5n1_ha_v2_fasta,
             bovine_texas_029328_01_UtoT_fasta = bovine_texas_029328_01_UtoT_fasta,
+            human_h5_200_bed = human_h5_200_bed,
             human_h5_250_bed = human_h5_250_bed,
             houston_bed = houston_bed,
             AVRL_H5N1_250bp_bed = AVRL_H5N1_250bp_bed
@@ -89,17 +91,18 @@ workflow h5 {
 
         String primer_outdir = project_outdir + ps.name + "/"
         # Call primer level tasks
-        scatter (samp in primer_samples) {
+        scatter (p_samp in primer_samples) {
             # Call sample level tasks
             call fastqc as fastqc_raw {
                 input: 
-                    fastq1 = samp.fastq1, 
-                    fastq2 = samp.fastq2, 
+                    fastq1 = p_samp.fastq1, 
+                    fastq2 = p_samp.fastq2, 
                     docker = fastqc_docker
             }
 
+            # Anything calling/using output from a python script task is commented out right now
             # call sample_qc_file as sample_qc_file_raw {input: 
-            #         sample_name = samp.name,
+            #         sample_name = p_samp.name,
             #         fastqc1_data = fastqc_raw.fastqc1_data,
             #         fastqc2_data = fastqc_raw.fastqc2_data,
             #         docker = python_docker
@@ -107,7 +110,7 @@ workflow h5 {
             
             call seqyclean {
                 input: 
-                    sample = samp,
+                    sample = p_samp,
                     contaminants_fasta = contaminants_fasta,
                     docker = seqyclean_docker
             }
@@ -121,7 +124,7 @@ workflow h5 {
 
             # call sample_qc_file as sample_qc_file_clean {
             #     input: 
-            #         sample_name = samp.name,
+            #         sample_name = p_samp.name,
             #         fastqc1_data = fastqc_clean.fastqc1_data,
             #         fastqc2_data = fastqc_clean.fastqc2_data,
             #         docker = python_docker
@@ -131,14 +134,15 @@ workflow h5 {
         # Reference level tasks
         scatter (p_ref in ps.references) {
             String reference_outdir = primer_outdir + p_ref.name + "/"
+
             scatter (n in num_samples) {
-                Sample samp = primer_samples[idx]
-                File PE1 = seqyclean.PE1[idx]
-                File PE2 = seqyclean.PE2[idx]
+                Sample r_samp = primer_samples[n]
+                File PE1 = seqyclean.PE1[n]
+                File PE2 = seqyclean.PE2[n]
 
                 call align_bwa {
                     input:
-                        sample_name = samp.name,
+                        sample_name = r_samp.name,
                         fastq1 = PE1,
                         fastq2 = PE2,
                         reference_name = p_ref.name,
@@ -148,7 +152,7 @@ workflow h5 {
 
                 call trim_primers_ivar {
                     input: 
-                        sample_name = samp.name,
+                        sample_name = r_samp.name,
                         bam = align_bwa.bam,
                         primer_bed = ps.bed,
                         docker = ivar_docker
@@ -156,7 +160,7 @@ workflow h5 {
 
                 call generate_consensus_ivar {
                     input: 
-                        sample_name = samp.name,
+                        sample_name = r_samp.name,
                         trim_sort_bam = trim_primers_ivar.trim_sort_bam,
                         reference_fasta = p_ref.fasta,
                         docker = samtools_docker
@@ -164,15 +168,14 @@ workflow h5 {
 
                 call alignment_metrics {
                     input:
-                        sample_name = samp.name,
+                        sample_name = r_samp.name,
                         trim_sort_bam = trim_primers_ivar.trim_sort_bam,
-                        reference_fasta = p_ref.fasta,
                         docker = samtools_docker
                 }
 
                 # call calculate_coverage_stats {
                 #     input:
-                #         sample_name = samp.name,
+                #         sample_name = r_samp.name,
                 #         ref_length = p_ref.length,
                 #         seq_ref_length = p_ref.captured_length,
                 #         consensus_fasta = generate_consensus_ivar.consensus_fasta,
@@ -181,7 +184,7 @@ workflow h5 {
 
                 # call concat_sample_reference_metrics {
                 #     input: 
-                #         sample_name = samp.name,
+                #         sample_name = r_samp.name,
                 #         samtools_coverage = alignment_metrics.coverage,
                 #         samtools_stats = alignment_metrics.stats,
                 #         coverage_stats = calculate_coverage_stats.coverage_stats,
@@ -190,19 +193,27 @@ workflow h5 {
 
             } 
 
-            Array[String] reference_task_dirs = ["bwa_alignment", "consensus_sequences", "metrics"]
-            Array[Array[File]] reference_task_files = [flatten([align_bwa.bam, align_bwa.bai,])]
+            Array[String] reference_task_dirs = ["alignments", "consensus_sequences", "metrics"]
+            Array[Array[File]] reference_task_files = [flatten([trim_primers_ivar.trim_sort_bam, trim_primers_ivar.trim_sort_bai,]),
+                                                    generate_consensus_ivar.consensus_fasta,
+                                                    flatten([alignment_metrics.coverage, alignment_metrics.stats])]
+
+            scatter (dir_files in zip(reference_task_dirs, reference_task_files)) {       
+                call transfer as transfer_reference_tasks {
+                    input:
+                        out_dir = reference_outdir,
+                        task_dir = dir_files.left,
+                        task_files = dir_files.right,
+                        docker = utility_docker
+                }
+            }
         }
 
-
         Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean"]
-        # Array[Array[File]] task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data, sample_qc_file_raw.summary_metrics]),
-        #                     flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data, sample_qc_file_clean.summary_metrics]),
-        #                     flatten([seqyclean.PE1, seqyclean.PE2])]
         Array[Array[File]] primer_task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
                             flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
-                            flatten([seqyclean.PE1, seqyclean.PE2])]
-        
+                            flatten([seqyclean.PE1, seqyclean.PE2])]       
+
         scatter (dir_files in zip(primer_task_dirs, primer_task_files)) {       
             call transfer as transfer_primer_tasks {
                 input:
@@ -212,9 +223,7 @@ workflow h5 {
                     docker = utility_docker
             }
         }
-        
     }
-
 }
 
 task transfer {
@@ -354,7 +363,6 @@ task align_bwa {
 
     String sam_fn = sample_name + ".sam"
     String bam_fn = sample_name + "aln.sorted.bam"
-    String bai_fn = sample_name + "aln.sorted.bai"
 
     command <<<
         bwa index -p ~{reference_name} -a is ~{reference_fasta}
@@ -364,7 +372,6 @@ task align_bwa {
 
     output {
         File bam = bam_fn
-        File bai = bai_fn
     }
 
     runtime {
@@ -394,7 +401,7 @@ task trim_primers_ivar {
 
     output {
         File trim_sort_bam = trim_sort_bam_fn
-        File trimmed_sorted_bai = trim_sort_bai_fn
+        File trim_sort_bai = trim_sort_bai_fn
     }
 
     runtime {
@@ -437,12 +444,11 @@ task alignment_metrics {
     input {
         String sample_name
         File trim_sort_bam
-        File reference_fasta
         String docker
     }
 
-    String coverage_fn = sample_name + "_coverage.txt"
-    String stats_fn = sample_name + "_stats.txt"
+    String coverage_fn = "~{sample_name}_coverage.txt"
+    String stats_fn = "~{sample_name}_stats.txt"
 
     command <<<
         samtools coverage -o ~{coverage_fn} ~{trim_sort_bam}
@@ -495,7 +501,7 @@ task concat_sample_reference_metrics {
     }
 
     command <<<
-        # python things
+        # python stuff
     >>>
 
     output {
@@ -517,7 +523,7 @@ task concat_sample_metrics {
     }
 
     command <<<
-        # python things
+        # python stuff
     >>>
 
     output {
@@ -538,7 +544,7 @@ task concat_all_samples_metrics {
     }
 
     command <<<
-        # python things
+        # python stuff
     >>>
 
     output {
