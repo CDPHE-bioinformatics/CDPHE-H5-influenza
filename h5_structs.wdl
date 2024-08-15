@@ -62,7 +62,12 @@ workflow declare_structs {
         fasta: victoria_4897_2022_h1n1_ha_h1_fasta
     }
 
-    PrimerScheme human_h5_250 = PrimerScheme {
+    PrimerScheme human_h5_200 = PrimerScheme {
+        name: "human_h5_200",
+        references:   [bovine_texas_029328_01_UtoT_ha],
+        bed: human_h5_200_bed
+    }
+        PrimerScheme human_h5_250 = PrimerScheme {
         name: "human_h5_250",
         references:   [vietnam_1203_2024_h5n1_ha_v2, 
                             bovine_texas_029328_01_UtoT_ha],
@@ -82,7 +87,7 @@ workflow declare_structs {
     }
 
     output {
-        Array[PrimerScheme] primer_schemes = [human_h5_250, houston, AVRL_H5N1_250bp] 
+        Array[PrimerScheme] primer_schemes = [human_h5_200, human_h5_250, houston, AVRL_H5N1_250bp] 
         Array[Reference] references = [vietnam_1203_2024_h5n1_ha_v2, 
                                         bovine_texas_029328_01_UtoT_ha, 
                                         darwin_9_2021_h3n2_ha_h3, 
