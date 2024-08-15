@@ -1,5 +1,13 @@
 version development
 
+struct Sample {
+    String name
+    String primer
+    File fastq1
+    File fastq2 
+    Int i
+}
+
 struct Reference {
     String name
     File fasta
@@ -37,6 +45,7 @@ workflow declare_structs {
         File darwin_9_2021_h3n2_ha_h3_fasta
         File victoria_4897_2022_h1n1_ha_h1_fasta
         File vietnam_1203_2024_h5n1_ha_v2_fasta  
+        File human_h5_200_bed
         File human_h5_250_bed
         File houston_bed
         File AVRL_H5N1_250bp_bed
@@ -64,7 +73,8 @@ workflow declare_structs {
 
     PrimerScheme human_h5_200 = PrimerScheme {
         name: "human_h5_200",
-        references:   [bovine_texas_029328_01_UtoT_ha],
+        references:   [vietnam_1203_2024_h5n1_ha_v2, 
+                        bovine_texas_029328_01_UtoT_ha],
         bed: human_h5_200_bed
     }
         PrimerScheme human_h5_250 = PrimerScheme {
