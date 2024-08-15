@@ -160,7 +160,7 @@ workflow h5 {
 task transfer {
     input {
         String out_dir
-        String task_dirs
+        String task_dir
         Array[File] task_files
         String docker
     }
@@ -169,7 +169,7 @@ task transfer {
     command <<<
         cat "~{write_lines(task_files)}" | gsutil -m cp -I "~{out_dir}~{task_dir}/"
     >>>
-    
+
     runtime {
         #cpu: ,
         #memory: ,
