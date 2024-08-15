@@ -78,14 +78,14 @@ workflow h5 {
             }
         }
 
-        Boolean primer_sample_matches = defined(primer_sample)
-        if (!primer_sample_matches) {
+        Array[Sample] primer_sample_matches = select_all(primer_sample)
+        if (length(primer_sample_matches) == 0) {
             call exit_wdl {input: exit_reason = "primer not used"}
         }        
 
         # This first line is only included because the following fails without it?
         Array[Int] index_matches = select_all(match_index)
-        Array[Sample] primer_samples = select_all(primer_sample)
+        Array[Sample] primer_samples = select_all(primer_sample)        
 
         Array[Int] num_samples = range(length(primer_samples))
 
@@ -287,7 +287,6 @@ task fastqc {
         fastqc --version | awk '/FastQC/ {print $2}' | tee VERSION  
         cp "~{fastq1_name}_fastqc/fastqc_data.txt" "~{fastq1_name}_fastqc_data.txt"
         cp "~{fastq2_name}_fastqc/fastqc_data.txt" "~{fastq2_name}_fastqc_data.txt"  
-        docker stats 
     >>>
 
     output {
