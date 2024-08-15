@@ -142,12 +142,15 @@ workflow h5 {
         Array[Array[File]] task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
                             flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
                             flatten([seqyclean.PE1, seqyclean.PE2])]
-        call transfer as transfer_primer_tasks {
-            input:
-                out_dir = primer_outdir,
-                task_dirs = task_dirs,
-                task_files = task_files,
-                docker = utility_docker
+        
+        scatter (dir_files in zip(task_dirs, task_files)) {       
+            call transfer as transfer_primer_tasks {
+                input:
+                    out_dir = primer_outdir,
+                    task_dir = dir_files.left,
+                    task_files = dir_files.right,
+                    docker = utility_docker
+            }
         }
         
     }
@@ -157,21 +160,16 @@ workflow h5 {
 task transfer {
     input {
         String out_dir
-        Array[String] task_dirs
-        Array[Array[File]] task_files
+        String task_dirs
+        Array[File] task_files
         String docker
     }
 
     # Have to re-declare variables in bash due to syntax clash
     command <<<
-        task_dirs_bash=(~{sep(' ', task_dirs)})
-        task_files_bash=~{task_files}
-        for i in "${!task_dirs_bash[@]}"; 
-        do
-            files="${task_files_bash[$i]//,/}"
-            gsutil -m cp "${files}" "~{out_dir}${task_dirs_bash[$i]}/"; 
-        done;
+        cat "~{write_lines(task_files)}" | gsutil -m cp -I "~{out_dir}~{task_dir}/"
     >>>
+    
     runtime {
         #cpu: ,
         #memory: ,
