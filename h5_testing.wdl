@@ -82,7 +82,6 @@ workflow h5 {
         Array[Sample] primer_samples = select_all(primer_sample)
         if (length(primer_samples) > 0) {          
 
-            String primer_outdir = project_outdir + ps.name + "/"
             # Call primer level tasks
             scatter (p_samp in primer_samples) {
                 # Call sample level tasks
@@ -125,7 +124,24 @@ workflow h5 {
     
             }
 
-            # Reference level tasks
+            # Transfer primer level files
+            String primer_outdir = project_outdir + ps.name + "/"
+            Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean"]
+            Array[Array[File]] primer_task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
+                                flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
+                                flatten([seqyclean.PE1, seqyclean.PE2])]       
+
+            scatter (dir_files in zip(primer_task_dirs, primer_task_files)) {       
+                call transfer as transfer_primer_tasks {
+                    input:
+                        out_dir = primer_outdir,
+                        task_dir = dir_files.left,
+                        task_files = dir_files.right,
+                        docker = utility_docker
+                }
+            }
+
+            # Call reference level tasks
             Array[Int] num_samples = range(length(primer_samples))            
             scatter (p_ref in ps.references) {
                 String reference_outdir = primer_outdir + p_ref.name + "/"
@@ -205,20 +221,7 @@ workflow h5 {
             }
         }
 
-        Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean"]
-        Array[Array[File]] primer_task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
-                            flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
-                            flatten([seqyclean.PE1, seqyclean.PE2])]       
 
-        scatter (dir_files in zip(primer_task_dirs, primer_task_files)) {       
-            call transfer as transfer_primer_tasks {
-                input:
-                    out_dir = primer_outdir,
-                    task_dir = dir_files.left,
-                    task_files = dir_files.right,
-                    docker = utility_docker
-            }
-        }
     }
 }
 
