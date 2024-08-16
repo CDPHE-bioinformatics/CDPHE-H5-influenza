@@ -366,12 +366,15 @@ task align_bwa {
     String bam_fn = "~{sample_name}_aln.sorted.bam"
 
     command <<<
+        samtools --version-only | tee samtools_version
         bwa index -p ~{reference_name} -a is ~{reference_fasta}
         bwa mem -t 6 ~{reference_name} ~{fastq1} ~{fastq2} > ~{sam_fn}
-        samtools view -b ~{sam_fn} | samtools sort -o ./{bam_fn}
+        samtools view -b -@6 ~{sam_fn} | samtools sort -m 2G -@ 6 -o ./{bam_fn}
+        ls
     >>>
 
     output {
+        String samtools_version = read_string('samtools_version')
         File bam = bam_fn
     }
 
