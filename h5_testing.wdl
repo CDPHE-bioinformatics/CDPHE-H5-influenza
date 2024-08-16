@@ -238,8 +238,8 @@ task transfer {
     >>>
 
     runtime {
-        #cpu: ,
-        #memory: ,
+        #cpu: 
+        #memory: 
         docker: docker
     }
 }
@@ -265,8 +265,8 @@ task multiqc {
         Array[File] fastqs_dir = glob("~{out_dir}*")
     }
     runtime {
-        #cpu: ,
-        #memory: ,
+        #cpu: 
+        #memory: 
         docker: docker
     }
 }
@@ -295,8 +295,8 @@ task fastqc {
     }
 
     runtime {
-        #cpu: ,
-        #memory: ,
+        #cpu: 
+        #memory: 
         docker: docker
     }
 }
@@ -318,8 +318,8 @@ task sample_qc_file {
     }
 
     runtime {
-        #cpu: ,
-        #memory: ,
+        #cpu: 
+        #memory: 
         docker: docker
     }
 }
@@ -343,8 +343,8 @@ task seqyclean {
     }
 
     runtime {
-        #cpu: ,
-        #memory: ,
+        #cpu: 
+        #memory: 
         docker: docker
     }
 }
@@ -375,7 +375,7 @@ task align_bwa {
     runtime {
         cpu: 2
         memory: "12 GB"
-        container: docker
+        docker: docker
     }
 }
 
@@ -403,8 +403,8 @@ task trim_primers_ivar {
     }
 
     runtime {
-        #cpu: ,
-        #memory: ,
+        #cpu: 
+        #memory: 
         docker: docker
     }
 }
@@ -432,8 +432,8 @@ task generate_consensus_ivar {
     }
 
     runtime {
-        #cpu: ,
-        #memory: ,
+        #cpu: 
+        #memory: 
         docker: docker
     }
 }
@@ -459,8 +459,8 @@ task alignment_metrics {
     }
 
     runtime {
-        #cpu: ,
-        #memory: ,
+        #cpu: 
+        #memory: 
         docker: docker
     }
 }
@@ -483,8 +483,8 @@ task calculate_coverage_stats {
     }
 
     runtime {
-        #cpu: ,
-        #memory: ,
+        #cpu: 
+        #memory: 
         docker: docker
     }
 }
@@ -507,8 +507,8 @@ task concat_sample_reference_metrics {
     }
 
     runtime {
-        #cpu: ,
-        #memory: ,
+        #cpu: 
+        #memory: 
         docker: docker
     }
 }
@@ -529,8 +529,8 @@ task concat_sample_metrics {
     }
 
     runtime {
-        #cpu: ,
-        #memory: ,
+        #cpu: 
+        #memory: 
         docker: docker
     }
 }
@@ -550,8 +550,8 @@ task concat_all_samples_metrics {
     }
 
     runtime {
-        #cpu: ,
-        #memory: ,
+        #cpu: 
+        #memory: 
         docker: docker
     }
 }
