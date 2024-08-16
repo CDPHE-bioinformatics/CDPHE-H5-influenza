@@ -26,6 +26,9 @@ workflow h5 {
         File bovine_texas_029328_01_UtoT_fasta
     }
 
+    meta {
+        allowNestedInputs: true
+    }
     # private declarations
     String fastqc_docker = 'staphb/fastqc:0.12.1'
     String seqyclean_docker = 'staphb/seqyclean:1.10.09'
