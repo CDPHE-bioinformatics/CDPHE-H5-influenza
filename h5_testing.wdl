@@ -346,8 +346,7 @@ task align_bwa {
         samtools --version-only | tee samtools_version
         bwa index -p ~{reference_name} -a is ~{reference_fasta}
         bwa mem -t 6 ~{reference_name} ~{fastq1} ~{fastq2} > ~{sam_fn}
-        samtools view -b -@6 ~{sam_fn} | samtools sort -m 2G -@ 6 -o ~{bam_fn}
-        ls
+        samtools view -b -@ 6 ~{sam_fn} | samtools sort -m 2G -@ 6 -o ~{bam_fn}
     >>>
 
     output {
@@ -376,8 +375,8 @@ task trim_primers_ivar {
     
     command <<<
         ivar trim -e -i ~{bam} -b ~{primer_bed} -p ~{trim_fn}
-        samtools sort ~{trim_fn} -o ~{trim_sort_bam_fn}
-        samtools index ~{trim_sort_bam_fn}
+        samtools sort -@ 6 -o ~{trim_sort_bam_fn} ~{trim_fn}
+        samtools index -@ 6 ~{trim_sort_bam_fn} -o ~{trim_sort_bai_fn}
     >>>
 
     output {
