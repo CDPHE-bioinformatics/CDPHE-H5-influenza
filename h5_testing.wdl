@@ -360,7 +360,7 @@ task align_bwa {
     }
 
     String sam_fn = "~{sample_name}.sam"
-    String bam_fn = "~{sample_name}.aln.sorted.bam"
+    String bam_fn = "~{sample_name}_aln.sorted.bam"
 
     command <<<
         bwa index -p ~{reference_name} -a is ~{reference_fasta}
