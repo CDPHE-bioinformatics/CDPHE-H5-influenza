@@ -10,20 +10,6 @@ workflow h5 {
         Array[File] fastq2s
         String project_name
         String gs_dir
-        File contaminants_fasta
-        File human_h5_200_bed
-        File human_h5_250_bed
-        File houston_bed
-        File AVRL_H5N1_250bp_bed
-
-        # All of these reference fastas are HA gene segments
-        File bovine_texas_029328_01_UtoT_ha_fasta
-        File darwin_9_2021_h3n2_ha_h3_fasta
-        File victoria_4897_2022_h1n1_ha_h1_fasta
-        File vietnam_1203_2024_h5n1_ha_v2_fasta    
-    
-        # Whole genome references
-        File bovine_texas_029328_01_UtoT_fasta
     }
 
     meta {
