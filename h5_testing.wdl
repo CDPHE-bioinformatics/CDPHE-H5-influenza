@@ -374,7 +374,7 @@ task align_bwa {
 
     runtime {
         cpu: 2
-        memory: "12 GB",
+        memory: "12 GB"
         container: docker
     }
 }
