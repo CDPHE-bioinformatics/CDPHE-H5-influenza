@@ -16,6 +16,7 @@ workflow h5 {
     meta {
         allowNestedInputs: true
     }
+
     # private declarations
     String fastqc_docker = 'staphb/fastqc:0.12.1'
     String seqyclean_docker = 'staphb/seqyclean:1.10.09'
@@ -32,7 +33,7 @@ workflow h5 {
 
     String project_outdir = gs_dir + "/" +  project_name + "/"
 
-    # Struct initilizations
+    # Struct initilizations (subworkflow)
     call sub.declare_structs as s {}
 
     # Scatter samples to create structs
@@ -345,7 +346,7 @@ task align_bwa {
         samtools --version-only | tee samtools_version
         bwa index -p ~{reference_name} -a is ~{reference_fasta}
         bwa mem -t 6 ~{reference_name} ~{fastq1} ~{fastq2} > ~{sam_fn}
-        samtools view -b -@6 ~{sam_fn} | samtools sort -m 2G -@ 6 -o ./{bam_fn}
+        samtools view -b -@6 ~{sam_fn} | samtools sort -m 2G -@ 6 -o ~{bam_fn}
         ls
     >>>
 
