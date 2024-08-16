@@ -385,8 +385,8 @@ task trim_primers_ivar {
     }
 
     runtime {
-        #cpu: 
-        #memory: 
+        cpu: 3
+        memory: "12 GB"
         docker: docker
     }
 }
