@@ -154,7 +154,7 @@ workflow h5 {
                             sample_name = r_samp.name,
                             trim_sort_bam = trim_primers_ivar.trim_sort_bam,
                             reference_fasta = p_ref.fasta,
-                            docker = samtools_docker
+                            docker = ivar_docker
                     }   
 
                     call alignment_metrics {
@@ -396,7 +396,7 @@ task generate_consensus_ivar {
         String sample_name
         File trim_sort_bam
         File reference_fasta
-       String docker
+        String docker
     }
 
     String pileup_fn = "~{sample_name}_pileup.txt"
