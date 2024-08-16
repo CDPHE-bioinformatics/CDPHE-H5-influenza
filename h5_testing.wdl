@@ -10,6 +10,7 @@ workflow h5 {
         Array[File] fastq2s
         String project_name
         String gs_dir
+        File contaminants_fasta
     }
 
     meta {
