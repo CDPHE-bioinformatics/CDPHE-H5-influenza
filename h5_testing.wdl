@@ -32,18 +32,7 @@ workflow h5 {
     String project_outdir = gs_dir + "/" +  project_name + "/"
 
     # Struct initilizations
-    call sub.declare_structs as s {
-        input: 
-            bovine_texas_029328_01_UtoT_ha_fasta = bovine_texas_029328_01_UtoT_ha_fasta,
-            darwin_9_2021_h3n2_ha_h3_fasta = darwin_9_2021_h3n2_ha_h3_fasta,
-            victoria_4897_2022_h1n1_ha_h1_fasta = victoria_4897_2022_h1n1_ha_h1_fasta,
-            vietnam_1203_2024_h5n1_ha_v2_fasta = vietnam_1203_2024_h5n1_ha_v2_fasta,
-            bovine_texas_029328_01_UtoT_fasta = bovine_texas_029328_01_UtoT_fasta,
-            human_h5_200_bed = human_h5_200_bed,
-            human_h5_250_bed = human_h5_250_bed,
-            houston_bed = houston_bed,
-            AVRL_H5N1_250bp_bed = AVRL_H5N1_250bp_bed
-    }
+    call sub.declare_structs as s {}
 
     # Scatter samples to create structs
     scatter (idx in indexes) {
