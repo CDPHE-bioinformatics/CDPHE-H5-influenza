@@ -441,8 +441,8 @@ task alignment_metrics {
     }
 
     runtime {
-        #cpu: 
-        #memory: 
+        cpu: 2
+        memory: "4 GB"
         docker: docker
     }
 }
