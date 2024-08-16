@@ -364,7 +364,8 @@ task align_bwa {
 
     command <<<
         bwa index -p ~{reference_name} -a is ~{reference_fasta}
-        bwa mem -t 6 ~{reference_name} ~{fastq1} ~{fastq2} | samtools view -bS | samtools sort -o {bam_fn}
+        bwa mem -t 6 ~{reference_name} ~{fastq1} ~{fastq2} > ~{sam_fn}
+        samtools view -b ~{sam_fn} | samtools sort -o {bam_fn}
     >>>
 
     output {
@@ -372,9 +373,9 @@ task align_bwa {
     }
 
     runtime {
-        #cpu: ,
-        #memory: ,
-        docker: docker
+        cpu: 2
+        memory: "12 GB",
+        container: docker
     }
 }
 
