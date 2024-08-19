@@ -252,7 +252,7 @@ task multiqc {
     String html_fn = "fastqc_~{fastqc_type}_multiqc_report.html"
 
     command <<<
-        multiqc -m "fastqc" -l ~{write_lines(fastqcs_data)} -n ~{html_fn}--cl-config "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }" 
+        multiqc -m "fastqc" -l ~{write_lines(fastqcs_data)} -n ~{html_fn} --cl-config "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }" 
     >>>
 
     output {
