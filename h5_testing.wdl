@@ -245,10 +245,8 @@ task multiqc {
         String docker
     }
 
-    String fastqc_dir = "~{fastqc_type}_fastqcs/"
-
     command <<<
-        multiqc -m "fastqc" -l ~{write_lines(task_files)} --cl-config "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }" ~{fastqc_dir} 
+        multiqc -m "fastqc" -l ~{write_lines(task_files)} --cl-config "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }" 
     >>>
 
     output {
