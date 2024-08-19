@@ -108,25 +108,21 @@ workflow h5 {
             call multiqc as multiqc_raw {
                 input:
                     fastqcs_data = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
-                    fastqc_type = "raw",
                     docker = multiqc_docker
             }
 
             call multiqc as multiqc_clean {
                 input:
                     fastqcs_data = flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
-                    fastqc_type = "clean",
                     docker = multiqc_docker
             }
             
             # Transfer primer level files
             String primer_outdir = project_outdir + ps.name + "/"
-            Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean", "multiqc_raw", "multiqc_clean"]
-            Array[Array[File]] primer_task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
-                                flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
-                                flatten([seqyclean.PE1, seqyclean.PE2]),
-                                multiqc_raw.outputs,
-                                multiqc_clean.outputs]       
+            Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean"]
+            Array[Array[File]] primer_task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data, multiqc_raw.html_report]),
+                                flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data, multiqc_clean.html_report]),
+                                flatten([seqyclean.PE1, seqyclean.PE2])]       
 
             scatter (dir_files in zip(primer_task_dirs, primer_task_files)) {       
                 call transfer as transfer_primer_tasks {
@@ -246,21 +242,17 @@ task transfer {
 task multiqc {
     input {
         Array[File] fastqcs_data
-        String fastqc_type
         String docker
     }
 
     String fastqc_dir = "~{fastqc_type}_fastqcs/"
-    String out_dir = "multiqc_~{fastqc_type}/"
 
     command <<<
-        mkdir ~{fastqc_dir}
-        cp ~{sep(' ', fastqcs_data)} ~{fastqc_dir}
-        multiqc ~{fastqc_dir} --outdir ~{out_dir}
+        multiqc -m "fastqc" -l ~{write_lines(task_files)} --cl-config "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }" ~{fastqc_dir} 
     >>>
 
     output {
-        Array[File] outputs = glob("~{out_dir}*")
+        File html_report = "multiqc_report.html"
     }
     runtime {
         #cpu: 
