@@ -246,7 +246,7 @@ task multiqc {
     }
 
     command <<<
-        multiqc -m "fastqc" -l ~{write_lines(task_files)} --cl-config "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }" 
+        multiqc -m "fastqc" -l ~{write_lines(fastqcs_data)} --cl-config "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }" 
     >>>
 
     output {
