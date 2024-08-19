@@ -256,7 +256,7 @@ task multiqc {
     command <<<
         mkdir ~{fastqc_dir}
         cp ~{sep(' ', fastqcs_data)} ~{fastqc_dir}
-        multiqc ~{fastqc_dir} --outdir
+        multiqc ~{fastqc_dir} --outdir ~{out_dir}
     >>>
 
     output {
