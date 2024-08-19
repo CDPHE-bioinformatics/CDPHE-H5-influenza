@@ -25,7 +25,7 @@ workflow h5 {
     String ivar_docker = 'staphb/ivar:1.4.2'
     String python_docker = 'ariannaesmith/py3.10.9-bio'
     String viral_core_docker = 'quay.io/broadinstitute/viral-core:2.2.3'
-    String multiqc_docker = 'staphb/multiqc:1.8'
+    String multiqc_docker = 'multiqc/multiqc:1.8'
     String jammy_docker = 'ubuntu:jammy-20240627.1'
     String utility_docker = 'theiagen/utility:1.0'
 
@@ -104,12 +104,29 @@ workflow h5 {
     
             }
 
+            # Call multiqc
+            call multiqc as multiqc_raw {
+                input:
+                    fastqcs_data = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
+                    fastqc_type = "raw",
+                    docker = multiqc_docker
+            }
+
+            call multiqc as multiqc_clean {
+                input:
+                    fastqcs_data = flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
+                    fastqc_type = "clean",
+                    docker = multiqc_docker
+            }
+            
             # Transfer primer level files
             String primer_outdir = project_outdir + ps.name + "/"
-            Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean"]
+            Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean", "multiqc_raw", "multiqc_clean"]
             Array[Array[File]] primer_task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
                                 flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
-                                flatten([seqyclean.PE1, seqyclean.PE2])]       
+                                flatten([seqyclean.PE1, seqyclean.PE2]),
+                                multiqc_raw.outputs,
+                                multiqc_clean.outputs]       
 
             scatter (dir_files in zip(primer_task_dirs, primer_task_files)) {       
                 call transfer as transfer_primer_tasks {
@@ -120,6 +137,8 @@ workflow h5 {
                         docker = utility_docker
                 }
             }
+
+
 
             # Call reference level tasks
             Array[Int] num_samples = range(length(primer_samples))            
@@ -226,23 +245,22 @@ task transfer {
 
 task multiqc {
     input {
-        Array[File] fastq1s
-        Array[File] fastq2s
-        String fastq_type
+        Array[File] fastqcs_data
+        String fastqc_type
         String docker
     }
-    String fastq_dir = "~{fastq_type}_fastqs/"
-    String out_dir = "multiqc_~{fastq_type}/"
+
+    String fastqc_dir = "~{fastqc_type}_fastqcs/"
+    String out_dir = "multiqc_~{fastqc_type}/"
 
     command <<<
-        mkdir ~{fastq_dir}
-        cp ~{sep(' ', fastq1s)} ~{fastq_dir}
-        cp ~{sep(' ', fastq2s)} ~{fastq_dir}
-        multiqc ~{fastq_dir} --outdir
+        mkdir ~{fastqc_dir}
+        cp ~{sep(' ', fastqcs_data)} ~{fastqc_dir}
+        multiqc ~{fastqc_dir} --outdir
     >>>
 
     output {
-        Array[File] fastqs_dir = glob("~{out_dir}*")
+        Array[File] outputs = glob("~{out_dir}*")
     }
     runtime {
         #cpu: 
