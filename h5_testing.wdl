@@ -25,7 +25,7 @@ workflow h5 {
     String ivar_docker = 'staphb/ivar:1.4.2'
     String python_docker = 'ariannaesmith/py3.10.9-bio'
     String viral_core_docker = 'quay.io/broadinstitute/viral-core:2.2.3'
-    String multiqc_docker = 'multiqc/multiqc:1.24'
+    String multiqc_docker = 'multiqc/multiqc:v1.24'
     String jammy_docker = 'ubuntu:jammy-20240627.1'
     String utility_docker = 'theiagen/utility:1.0'
 
