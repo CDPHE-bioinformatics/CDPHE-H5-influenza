@@ -417,7 +417,7 @@ task trim_primers_ivar {
         ivar trim -e -i ~{bam} -b ~{primer_bed} -p ~{trim_fn}
         samtools sort -@ 6 -o ~{trim_sort_bam_fn} ~{trim_fn}
         samtools index -@ 6 ~{trim_sort_bam_fn} -o ~{trim_sort_bai_fn}
-        samtools idxstats ~{trim_sort_bam_fn} > idxstats_fn
+        samtools idxstats ~{trim_sort_bam_fn} > ~{idxstats_fn}
     >>>
 
     output {
