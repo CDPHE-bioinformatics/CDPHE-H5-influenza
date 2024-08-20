@@ -107,17 +107,29 @@ workflow h5 {
             }
 
             # Call multiqc
+            String fastqc_cl_config = "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }" 
             call multiqc as multiqc_raw {
                 input:
-                    fastqcs_data = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
-                    fastqc_type = "raw",
+                    files = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
+                    module = "fastqc",
+                    task_name = "raw",
+                    cl_config = fastqc_cl_config,
                     docker = multiqc_docker
             }
 
             call multiqc as multiqc_clean {
                 input:
-                    fastqcs_data = flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
-                    fastqc_type = "clean",
+                    files = flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
+                    module = "fastqc",
+                    task_name = "clean",
+                    cl_config = fastqc_cl_config,
+                    docker = multiqc_docker
+            }
+
+            call multiqc as multiqc_seqyclean {
+                input:
+                    files = seqyclean.summary_stats,
+                    module = "seqyclean",
                     docker = multiqc_docker
             }
             
@@ -127,7 +139,7 @@ workflow h5 {
             Array[Array[File]] primer_task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
                                 flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
                                 flatten([seqyclean.PE1, seqyclean.PE2]),
-                                [multiqc_raw.html_report, multiqc_clean.html_report]]       
+                                [multiqc_raw.html_report, multiqc_clean.html_report, multiqc_seqyclean.html_report]]       
 
             scatter (dir_files in zip(primer_task_dirs, primer_task_files)) {       
                 call transfer as transfer_primer_tasks {
@@ -265,15 +277,18 @@ task transfer {
 
 task multiqc {
     input {
-        Array[File] fastqcs_data
-        String fastqc_type
+        Array[File] files
+        String module
+        String? task_name
+        String? cl_config
         String docker
     }
 
-    String html_fn = "fastqc_~{fastqc_type}_multiqc_report.html"
+    String task_prefix = if defined(task_name) then "~{module}_~{task_name}" else None
+    String html_fn = "~{select_first([task_prefix, module])}_multiqc_report.html"
 
     command <<<
-        multiqc -m "fastqc" -l ~{write_lines(fastqcs_data)} -n ~{html_fn} --cl-config "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }" 
+        multiqc -m ~{module} -l ~{write_lines(files)} -n ~{html_fn} ~{if defined(cl_config) then "--cl-config ${cl_config}" else ""} 
     >>>
 
     output {
@@ -347,15 +362,16 @@ task seqyclean {
         String docker
     }
 
-    String out_name = "seqyclean/~{sample.name}_clean"
+    String out_name = "~{sample.name}_clean"
 
     command <<<
         seqyclean -minlen 25 -qual 30 30 -gz -1 ~{sample.fastq1} -2 ~{sample.fastq2} -c ~{contaminants_fasta} -o ~{out_name}
     >>>
 
     output {
-        File PE1 = "seqyclean/~{sample.name}_clean_PE1.fastq.gz"
-        File PE2 = "seqyclean/~{sample.name}_clean_PE2.fastq.gz"
+        File PE1 = "~{sample.name}_clean_PE1.fastq.gz"
+        File PE2 = "~{sample.name}_clean_PE2.fastq.gz"
+        File summary_stats = "~{sample.name}_SummaryStatistics.tsv"
     }
 
     runtime {
