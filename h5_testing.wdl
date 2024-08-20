@@ -25,10 +25,9 @@ workflow h5 {
     String ivar_docker = 'staphb/ivar:1.4.2'
     String python_docker = 'ariannaesmith/py3.10.9-bio'
     String viral_core_docker = 'quay.io/broadinstitute/viral-core:2.2.3'
-    String multiqc_docker = 'multiqc/multiqc:1.8'
+    String multiqc_docker = 'multiqc/multiqc:1.24'
     String jammy_docker = 'ubuntu:jammy-20240627.1'
     String utility_docker = 'theiagen/utility:1.0'
-    String git_docker = 'ariannaesmith/git:0.0.0'
 
     Array[Int] indexes = range(length(samples))
     String project_outdir = gs_dir + "/" +  project_name + "/"
@@ -272,12 +271,13 @@ task multiqc {
         String docker
     }
 
-    String task_prefix = if defined(task_name) then "~{module}_~{task_name}" else None
+    String? task_prefix = if defined(task_name) then "~{module}_~{task_name}" else None
     String html_fn = "~{select_first([task_prefix, module])}_multiqc_report.html"
 
     command <<<
-        multiqc -m ~{module} -l ~{write_lines(files)} -n ~{html_fn} ~{if defined(cl_config) then "--cl-config ${cl_config}" else ""} 
+        multiqc -m ~{module} -l ~{write_lines(files)} -n ~{html_fn} ~{if defined(cl_config) then "--cl-config {cl_config}" else ""} 
     >>>
+multiqc -m "fastqc" -l files.txt -n "AVRL_fastqc_clean_html_report.html" --cl-config "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }"
 
     output {
         File html_report = html_fn
