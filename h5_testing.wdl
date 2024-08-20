@@ -34,7 +34,7 @@ workflow h5 {
 
     String project_outdir = gs_dir + "/" +  project_name + "/"
 
-    call repo_version {input: git_docker}
+    call repo_version {input: docker = git_docker}
 
     # Struct initilizations (subworkflow)
     call sub.declare_structs as s {}
