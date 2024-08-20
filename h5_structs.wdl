@@ -25,19 +25,6 @@ struct VersionInfo {
   String version
 }
 
-struct SampleReferenceOutputs {
-    String primer_scheme_name
-    String reference_name
-    Pair[String, File] bam
-    Pair[String, File] trimmed_sorted_bam
-    Pair[String, File] trimmed_sorted_bai
-    Pair[String, File] pileup
-    Pair[String, File] consensus_fasta
-    Pair[String, File] samtools_coverage
-    Pair[String, File] samtools_stats
-    Pair[String, File] coverage_stats
-}
-
 workflow declare_structs {
     input {
         File bovine_texas_029328_01_UtoT_ha_fasta

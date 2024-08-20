@@ -31,7 +31,6 @@ workflow h5 {
     String git_docker = 'ariannaesmith/git:0.0.0'
 
     Array[Int] indexes = range(length(samples))
-
     String project_outdir = gs_dir + "/" +  project_name + "/"
 
     call repo_version {input: docker = git_docker}
@@ -232,6 +231,7 @@ task repo_version {
     }
 
     command <<<
+        git init
         git describe --tags --abbrev=0 | tee repo_version
     >>>
     
