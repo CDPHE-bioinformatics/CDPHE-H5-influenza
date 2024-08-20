@@ -359,7 +359,7 @@ task seqyclean {
     output {
         File PE1 = "~{sample.name}_clean_PE1.fastq.gz"
         File PE2 = "~{sample.name}_clean_PE2.fastq.gz"
-        File summary_stats = "~{sample.name}_SummaryStatistics.tsv"
+        File summary_stats = "~{sample.name}_clean_SummaryStatistics.tsv"
     }
 
     runtime {
