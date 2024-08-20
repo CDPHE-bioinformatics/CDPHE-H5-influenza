@@ -33,8 +33,6 @@ workflow h5 {
     Array[Int] indexes = range(length(samples))
     String project_outdir = gs_dir + "/" +  project_name + "/"
 
-    call repo_version {input: docker = git_docker}
-
     # Struct initilizations (subworkflow)
     call sub.declare_structs as s {}
 
@@ -132,6 +130,7 @@ workflow h5 {
                     module = "seqyclean",
                     docker = multiqc_docker
             }
+
             
             # Transfer primer level files
             String primer_outdir = project_outdir + ps.name + "/"
@@ -216,6 +215,14 @@ workflow h5 {
 
                 } 
 
+                call multiqc as multiqc_samtools {
+                    input:
+                        files = flatten([trim_primers_ivar.idxstats, alignment_metrics.coverage, alignment_metrics.stats]),
+                        module = "samtools",
+                        task_name = "alignment",
+                        docker = multiqc_docker
+                }
+                
                 Array[String] reference_task_dirs = ["alignments", "consensus_sequences", "metrics"]
                 Array[Array[File]] reference_task_files = [flatten([trim_primers_ivar.trim_sort_bam, trim_primers_ivar.trim_sort_bai,]),
                                                         generate_consensus_ivar.consensus_fasta,
@@ -234,25 +241,6 @@ workflow h5 {
         }
 
 
-    }
-}
-
-task repo_version {
-    input {
-        String docker
-    }
-
-    command <<<
-        git init
-        git describe --tags --abbrev=0 | tee repo_version
-    >>>
-    
-    output {
-        String version = read_string("repo_version")
-    }
-
-    runtime {
-        docker: docker
     }
 }
 
@@ -424,16 +412,19 @@ task trim_primers_ivar {
     String trim_fn = "~{sample_name}_trimmed.bam"
     String trim_sort_bam_fn = "~{sample_name}_trimmed.sorted.bam"
     String trim_sort_bai_fn = "~{sample_name}_trimmed.sorted.bai"
+    String idxstats_fn = "~{sample_name}_trimmed_sorted_idxstats.txt"
     
     command <<<
         ivar trim -e -i ~{bam} -b ~{primer_bed} -p ~{trim_fn}
         samtools sort -@ 6 -o ~{trim_sort_bam_fn} ~{trim_fn}
         samtools index -@ 6 ~{trim_sort_bam_fn} -o ~{trim_sort_bai_fn}
+        samtools idxstats ~{trim_sort_bam_fn} > idxstats_fn
     >>>
 
     output {
         File trim_sort_bam = trim_sort_bam_fn
         File trim_sort_bai = trim_sort_bai_fn
+        File idxstats = idxstats_fn
     }
 
     runtime {
