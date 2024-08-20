@@ -28,10 +28,13 @@ workflow h5 {
     String multiqc_docker = 'multiqc/multiqc:1.8'
     String jammy_docker = 'ubuntu:jammy-20240627.1'
     String utility_docker = 'theiagen/utility:1.0'
+    String git_docker = 'ariannaesmith/git:0.0.0'
 
     Array[Int] indexes = range(length(samples))
 
     String project_outdir = gs_dir + "/" +  project_name + "/"
+
+    call repo_version {input: git_docker}
 
     # Struct initilizations (subworkflow)
     call sub.declare_structs as s {}
@@ -60,7 +63,7 @@ workflow h5 {
 
         # Only call downstream tasks if primer was used
         Array[Sample] primer_samples = select_all(primer_sample)
-        if (length(primer_samples) > 0) {          
+        if (length(primer_samples) > 0) {
 
             # Call primer level tasks
             scatter (p_samp in primer_samples) {
@@ -223,6 +226,24 @@ workflow h5 {
     }
 }
 
+task repo_version {
+    input {
+        String docker
+    }
+
+    command <<<
+        git describe --tags --abbrev=0 | tee repo_version
+    >>>
+    
+    output {
+        String version = read_string("repo_version")
+    }
+
+    runtime {
+        docker: docker
+    }
+}
+
 task transfer {
     input {
         String out_dir
@@ -258,6 +279,7 @@ task multiqc {
     output {
         File html_report = html_fn
     }
+
     runtime {
         #cpu: 
         #memory: 
