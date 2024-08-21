@@ -256,15 +256,15 @@ workflow h5 {
 
 
     output { 
-        Array[String] primers_used = p_name
-        Array[Array[File]] p_fastqc_raw_outputs = fastqc_raw_output
-        Array[Array[File]] p_fastqc_clean_outputs = fastqc_clean_output
-        Array[Array[File]] p_seqyclean_outputs = seqyclean_output
-        Array[Array[File]] p_summary_outputs = p_summary_output
-        Array[Array[Array[File]]] p_refs_used = refs_used
-        Array[Array[Array[File]]] p_refs_alignment_outputs = refs_alignment_outputs
-        Array[Array[Array[File]]] p_refs_consensus_outputs = refs_consensus_outputs
-        Array[Array[Array[File]]] p_refs_summary_outputs = refs_summary_outputs
+        Array[String] primers_used = select_all(p_name)
+        Array[Array[File]] p_fastqc_raw_outputs = select_all(fastqc_raw_output)
+        Array[Array[File]] p_fastqc_clean_outputs = select_all(fastqc_clean_output)
+        Array[Array[File]] p_seqyclean_outputs = select_all(seqyclean_output)
+        Array[Array[File]] p_summary_outputs = select_all(p_summary_output)
+        Array[Array[String]] p_refs_used = select_all(refs_used)
+        Array[Array[Array[File]]] p_refs_alignment_outputs = select_all(refs_alignment_outputs)
+        Array[Array[Array[File]]] p_refs_consensus_outputs = select_all(refs_consensus_outputs)
+        Array[Array[Array[File]]] p_refs_summary_outputs = select_all(refs_summary_outputs)
     }    
 }
 
