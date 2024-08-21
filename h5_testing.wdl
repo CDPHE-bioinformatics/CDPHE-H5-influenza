@@ -60,7 +60,7 @@ workflow h5 {
         # Only call downstream tasks if primer was used
         Array[Sample] primer_samples = select_all(primer_sample)
         if (length(primer_samples) > 0) {
-
+            String p_name = ps.name
             # Call primer level tasks
             scatter (p_samp in primer_samples) {
                 # Call sample level tasks
@@ -132,12 +132,14 @@ workflow h5 {
 
             
             # Transfer primer level files
-            String primer_outdir = project_outdir + ps.name + "/"
+            String primer_outdir = project_outdir + p_name + "/"
+            Array[File] fastqc_raw_output = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data])
+            Array[File] fastqc_clean_output = flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data])
+            Array[File] seqyclean_output = flatten([seqyclean.PE1, seqyclean.PE2])
+            Array[File] p_summary_output = [multiqc_raw.html_report, multiqc_clean.html_report, multiqc_seqyclean.html_report]
+
             Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean", "summary_files"]
-            Array[Array[File]] primer_task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
-                                flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
-                                flatten([seqyclean.PE1, seqyclean.PE2]),
-                                [multiqc_raw.html_report, multiqc_clean.html_report, multiqc_seqyclean.html_report]]       
+            Array[Array[File]] primer_task_files = [fastqc_raw_output, fastqc_clean_output, seqyclean_output, p_summary_output]       
 
             scatter (dir_files in zip(primer_task_dirs, primer_task_files)) {       
                 call transfer as transfer_primer_tasks {
@@ -154,7 +156,8 @@ workflow h5 {
             # Call reference level tasks
             Array[Int] num_samples = range(length(primer_samples))            
             scatter (p_ref in ps.references) {
-                String reference_outdir = primer_outdir + p_ref.name + "/"
+                String ref_name = p_ref.name
+                String reference_outdir = primer_outdir + ref_name + "/"
 
                 scatter (n in num_samples) {
                     Sample r_samp = primer_samples[n]
@@ -166,7 +169,7 @@ workflow h5 {
                             sample_name = r_samp.name,
                             fastq1 = PE1,
                             fastq2 = PE2,
-                            reference_name = p_ref.name,
+                            reference_name = ref_name,
                             reference_fasta = p_ref.fasta,
                             docker = viral_core_docker
                     }  
@@ -224,10 +227,13 @@ workflow h5 {
                         docker = multiqc_docker
                 }
                 
+                # Transfer reference level files
+                Array[File] alignment_output = flatten([trim_primers_ivar.trim_sort_bam, trim_primers_ivar.trim_sort_bai])
+                Array[File] consensus_output = generate_consensus_ivar.consensus_fasta
+                Array[File] ref_summary_output = flatten([alignment_metrics.coverage, alignment_metrics.stats, [multiqc_samtools.html_report]])
+                
                 Array[String] reference_task_dirs = ["alignments", "consensus_sequences", "metrics"]
-                Array[Array[File]] reference_task_files = [flatten([trim_primers_ivar.trim_sort_bam, trim_primers_ivar.trim_sort_bai,]),
-                                                        generate_consensus_ivar.consensus_fasta,
-                                                        flatten([alignment_metrics.coverage, alignment_metrics.stats, [multiqc_samtools.html_report]])]
+                Array[Array[File]] reference_task_files = [alignment_output, consensus_output, ref_summary_output]
 
                 scatter (dir_files in zip(reference_task_dirs, reference_task_files)) {       
                     call transfer as transfer_reference_tasks {
@@ -239,10 +245,27 @@ workflow h5 {
                     }
                 }
             }
+
+            Array[String] refs_used = ref_name
+            Array[Array[File]] refs_alignment_outputs = alignment_output
+            Array[Array[File]] refs_consensus_outputs = consensus_output
+            Array[Array[File]] refs_summary_outputs = ref_summary_output
         }
-
-
     }
+
+
+
+    output { 
+        Array[String] primers_used = p_name
+        Array[Array[File]] p_fastqc_raw_outputs = fastqc_raw_output
+        Array[Array[File]] p_fastqc_clean_outputs = fastqc_clean_output
+        Array[Array[File]] p_seqyclean_outputs = seqyclean_output
+        Array[Array[File]] p_summary_outputs = p_summary_output
+        Array[Array[Array[File]]] p_refs_used = refs_used
+        Array[Array[Array[File]]] p_refs_alignment_outputs = refs_alignment_outputs
+        Array[Array[Array[File]]] p_refs_consensus_outputs = refs_consensus_outputs
+        Array[Array[Array[File]]] p_refs_summary_outputs = refs_summary_outputs
+    }    
 }
 
 task transfer {
