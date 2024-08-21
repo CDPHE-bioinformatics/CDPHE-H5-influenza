@@ -276,7 +276,6 @@ task multiqc {
 
     command <<<
         multiqc -m "~{module}" -l ~{write_lines(files)} -n ~{html_fn} ~{if defined(cl_config) then '--cl-config "${cl_config}"' else ''} 
-        multiqc -m "fastqc" -l ~{write_lines(fastqcs_data)} -n ~{html_fn} --cl-config "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }"
     >>>
 
     output {
