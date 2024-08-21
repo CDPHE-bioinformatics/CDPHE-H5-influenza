@@ -50,8 +50,6 @@ task capture_versions {
         --workflow_version ~{workflow_version} \
         --project_name ~{project_name} \
         --analysis_date ~{analysis_date}
-
-        gsutil cp ~{out_fn} "~{project_outdir}summary_results/"
     >>>
 
     output {
