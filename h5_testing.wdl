@@ -214,18 +214,20 @@ workflow h5 {
 
                 } 
 
+                String samtools_cl_config = "extra_fn_clean_exts: [ '_coverage', '_stats']"
                 call multiqc as multiqc_samtools {
                     input:
                         files = flatten([trim_primers_ivar.idxstats, alignment_metrics.coverage, alignment_metrics.stats]),
                         module = "samtools",
                         task_name = "alignment",
+                        cl_config = samtools_cl_config
                         docker = multiqc_docker
                 }
                 
                 Array[String] reference_task_dirs = ["alignments", "consensus_sequences", "metrics"]
                 Array[Array[File]] reference_task_files = [flatten([trim_primers_ivar.trim_sort_bam, trim_primers_ivar.trim_sort_bai,]),
                                                         generate_consensus_ivar.consensus_fasta,
-                                                        flatten([alignment_metrics.coverage, alignment_metrics.stats])]
+                                                        flatten([alignment_metrics.coverage, alignment_metrics.stats, [multiqc_samtools.html_report]])]
 
                 scatter (dir_files in zip(reference_task_dirs, reference_task_files)) {       
                     call transfer as transfer_reference_tasks {
