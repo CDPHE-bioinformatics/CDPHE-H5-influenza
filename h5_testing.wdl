@@ -220,7 +220,7 @@ workflow h5 {
                         files = flatten([trim_primers_ivar.idxstats, alignment_metrics.coverage, alignment_metrics.stats]),
                         module = "samtools",
                         task_name = "alignment",
-                        cl_config = samtools_cl_config
+                        cl_config = samtools_cl_config,
                         docker = multiqc_docker
                 }
                 
