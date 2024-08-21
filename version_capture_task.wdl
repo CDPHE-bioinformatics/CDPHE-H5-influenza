@@ -13,7 +13,9 @@ struct VersionInfoArray {
 }
 
 task workflow_metadata {
-
+    input {
+        String docker
+    }
     meta {
         description: "capture repository version release"
     }
@@ -25,6 +27,10 @@ task workflow_metadata {
     output {
         String analysis_date = read_string("TODAY")
         String version = "v0-0-0-alpha" 
+    }
+
+    runtime {
+        docker: docker
     }
 }
 

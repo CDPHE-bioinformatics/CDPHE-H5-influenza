@@ -32,7 +32,7 @@ workflow h5 {
 
     Array[Int] indexes = range(length(samples))
 
-    call vc.workflow_metadata as w_meta {}
+    call vc.workflow_metadata as w_meta { input: docker = jammy_docker}
     String project_outdir = gs_dir + "/" +  project_name + "/terra_outputs/" + w_meta.version + "/"
 
     # Struct initilizations (subworkflow)
