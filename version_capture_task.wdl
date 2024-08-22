@@ -37,12 +37,12 @@ task workflow_metadata {
 task capture_versions {
     input {
         Array[VersionInfo] version_array
-        String workflow_name
+        String workflow_name = 'h5_testing'
         String workflow_version
         String project_name
         String analysis_date
         File version_capture_py
-        String docker
+        String docker = 'mchether/py3-bio:v4'
     }
 
     VersionInfoArray versions = VersionInfoArray { versions: version_array }
