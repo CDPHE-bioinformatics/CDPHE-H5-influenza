@@ -21,18 +21,15 @@ workflow h5 {
     # private declarations
     String fastqc_docker = 'staphb/fastqc:0.12.1'
     String seqyclean_docker = 'staphb/seqyclean:1.10.09'
-    String bwa_docker = 'staphb/bwa:0.7.17'
-    #String samtools_docker = 'staphb/samtools:1.10'
     String ivar_docker = 'staphb/ivar:1.4.2'
     String python_docker = 'ariannaesmith/py3.10.9-bio'
-    String viral_core_docker = 'quay.io/broadinstitute/viral-core:2.2.3'
     String multiqc_docker = 'multiqc/multiqc:v1.24'
     String jammy_docker = 'ubuntu:jammy-20240627.1'
     String utility_docker = 'theiagen/utility:1.0'
 
     Array[Int] indexes = range(length(samples))
 
-    call vc.workflow_metadata as w_meta { input: docker = jammy_docker}
+    call vc.workflow_metadata as w_meta { input: docker = jammy_docker }
     String project_outdir = gs_dir + "/" +  project_name + "/terra_outputs/" + w_meta.version + "/"
 
     # Struct initilizations (subworkflow)
@@ -108,22 +105,12 @@ workflow h5 {
             }
 
             # Call multiqc
-            String fastqc_cl_config = "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }" 
-            call multiqc as multiqc_raw {
+            call multiqc as multiqc_fastqc {
                 input:
-                    files = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
+                    files = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data,
+                                    fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
                     module = "fastqc",
-                    task_name = "raw",
-                    cl_config = fastqc_cl_config,
-                    docker = multiqc_docker
-            }
-
-            call multiqc as multiqc_clean {
-                input:
-                    files = flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
-                    module = "fastqc",
-                    task_name = "clean",
-                    cl_config = fastqc_cl_config,
+                    cl_config = "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }",
                     docker = multiqc_docker
             }
 
@@ -133,14 +120,13 @@ workflow h5 {
                     module = "seqyclean",
                     docker = multiqc_docker
             }
-
             
             # Transfer primer level files
             String primer_outdir = project_outdir + p_name + "/"
             Array[File] fastqc_raw_output = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data])
             Array[File] fastqc_clean_output = flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data])
             Array[File] seqyclean_output = flatten([seqyclean.PE1, seqyclean.PE2])
-            Array[File] p_summary_output = [multiqc_raw.html_report, multiqc_clean.html_report, multiqc_seqyclean.html_report]
+            Array[File] p_summary_output = [multiqc_fastqc.html_report, multiqc_seqyclean.html_report]
 
             Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean", "summary_files"]
             Array[Array[File]] primer_task_files = [fastqc_raw_output, fastqc_clean_output, seqyclean_output, p_summary_output]       
@@ -154,11 +140,6 @@ workflow h5 {
                         docker = utility_docker
                 }
             }
-
-            # Grab primer level task versions
-            # VersionInfo fastqc_version = select_first(fastqc_raw.version_info)
-            # VersionInfo seqyclean_version = select_first(seqyclean.version_info)
-            # VersionInfo multiqc_version = multiqc_raw.version_info
 
             # Call reference level tasks
             Array[Int] num_samples = range(length(primer_samples))            
@@ -178,7 +159,7 @@ workflow h5 {
                             fastq2 = PE2,
                             reference_name = ref_name,
                             reference_fasta = p_ref.fasta,
-                            docker = viral_core_docker
+                            docker = ivar_docker
                     }  
 
                     call trim_primers_ivar {
@@ -224,13 +205,12 @@ workflow h5 {
 
                 } 
 
-                String samtools_cl_config = "extra_fn_clean_exts: [ '_coverage', '_stats']"
                 call multiqc as multiqc_samtools {
                     input:
                         files = flatten([trim_primers_ivar.idxstats, alignment_metrics.coverage, alignment_metrics.stats]),
                         module = "samtools",
                         task_name = "alignment",
-                        cl_config = samtools_cl_config,
+                        cl_config = "extra_fn_clean_exts: [ '_coverage', '_stats']",
                         docker = multiqc_docker
                 }
                 
@@ -251,11 +231,6 @@ workflow h5 {
                             docker = utility_docker
                     }
                 }
-
-                # Grab reference level task versions
-                # VersionInfo viral_core_samtools_version = select_first(align_bwa.samtools_version_info)
-                # VersionInfo ivar_samtools_version = select_first(trim_primers_ivar.samtools_version_info)
-                # VersionInfo ivar_version = select_first(trim_primers_ivar.ivar_version_info)
             }
 
             Array[String] refs_used = ref_name
@@ -268,32 +243,30 @@ workflow h5 {
     VersionInfo fastqc_version = select_first(select_first(fastqc_raw.version_info))
     VersionInfo seqyclean_version = select_first(select_first(seqyclean.version_info))
     VersionInfo multiqc_version = select_first(multiqc_raw.version_info)
-    VersionInfo viral_core_samtools_version = select_first(select_first(select_first(align_bwa.samtools_version_info)))
-    VersionInfo ivar_samtools_version = select_first(select_first(select_first(trim_primers_ivar.samtools_version_info)))
-    VersionInfo ivar_version = select_first(select_first(select_first(trim_primers_ivar.ivar_version_info)))
+    VersionInfo samtools_version = select_first(select_first(select_first(align_bwa.samtools_version_info)))
+    VersionInfo bwa_version = select_first(select_first(select_first(align_bwa.samtools_version_info)))
+    VersionInfo ivar_version = select_first(select_first(select_first(align_bwa.bwa_version_info)))
     Array[VersionInfo] version_array = [fastqc_version, seqyclean_version, multiqc_version, 
-                                viral_core_samtools_version, ivar_samtools_version, ivar_version]
+                                samtools_version, bwa_version, ivar_version]
 
+    call vc.capture_versions as version_cap {
+        input:
+            version_array,
+            workflow_name = 'h5_testing',
+            workflow_version = w_meta.version,
+            project_name,
+            analysis_date = w_meta.analysis_date,
+            version_capture_py,
+            docker = 'mchether/py3-bio:v4'
+    }
 
-    # VersionInfo fastqc_v = select_first(fastqc_version)
-    # VersionInfo seqyclean_v = select_first(seqyclean_version)
-    # VersionInfo multiqc_v = select_first(multiqc_version)
-    # VersionInfo viral_core_samtools_v = select_first(select_first(viral_core_samtools_version))
-    # VersionInfo ivar_samtools_v = select_first(select_first(ivar_samtools_version))
-    # VersionInfo ivar_v = select_first(select_first(ivar_version))
-    # Array[VersionInfo] version_array = [fastqc_v, seqyclean_v, multiqc_v, viral_core_samtools_v, ivar_samtools_v, ivar_v]
-
-    # call vc.capture_versions {
-    #     input:
-    #         version_array,
-    #         workflow_name = 'h5_testing',
-    #         workflow_version = w_meta.version,
-    #         project_name,
-    #         project_outdir,
-    #         analysis_date = w_meta.analysis_date,
-    #         version_capture_py,
-    #         docker = 'lets make a new docker'
-    # }
+    call transfer as transfer_vc {
+        input:
+            out_dir = primer_outdir,
+            task_dir = 'summary_files',
+            task_files = [version_cap.output_file],
+            docker = utility_docker
+    }
 
     output { 
         Array[String] primers_used = select_all(p_name)
@@ -467,6 +440,7 @@ task align_bwa {
 
     command <<<
         samtools --version-only | tee SAMTOOLS_VERSION
+        ivar version | awk ' /iVar/ {print $3}' | tee IVAR_VERSION
         bwa index -p ~{reference_name} -a is ~{reference_fasta}
         bwa mem -t 6 ~{reference_name} ~{fastq1} ~{fastq2} > ~{sam_fn}
         samtools view -b -@ 6 ~{sam_fn} | samtools sort -m 2G -@ 6 -o ~{bam_fn}
@@ -474,10 +448,20 @@ task align_bwa {
 
     output {
         File bam = bam_fn
+        VersionInfo bwa_version_info = VersionInfo {
+            software: "bwa",
+            docker: docker,
+            version: '0.7.17-r1188'
+        }
         VersionInfo samtools_version_info = VersionInfo {
             software: "samtools",
             docker: docker,
             version: read_string('SAMTOOLS_VERSION')
+        }
+        VersionInfo ivar_version_info = VersionInfo {
+            software: "ivar",
+            docker: docker,
+            version: read_string('IVAR_VERSION')
         }
     }
 
@@ -506,24 +490,12 @@ task trim_primers_ivar {
         samtools sort -@ 6 -o ~{trim_sort_bam_fn} ~{trim_fn}
         samtools index -@ 6 ~{trim_sort_bam_fn} -o ~{trim_sort_bai_fn}
         samtools idxstats ~{trim_sort_bam_fn} > ~{idxstats_fn}
-        ivar version | awk ' /iVar/ {print $3}' | tee IVAR_VERSION
-        samtools --version-only | tee SAMTOOLS_VERSION
     >>>
 
     output {
         File trim_sort_bam = trim_sort_bam_fn
         File trim_sort_bai = trim_sort_bai_fn
         File idxstats = idxstats_fn        
-        VersionInfo samtools_version_info = VersionInfo {
-            software: "samtools",
-            docker: docker,
-            version: read_string('SAMTOOLS_VERSION')
-        }
-        VersionInfo ivar_version_info = VersionInfo {
-            software: "ivar",
-            docker: docker,
-            version: read_string('IVAR_VERSION')
-        }
     }
 
     runtime {

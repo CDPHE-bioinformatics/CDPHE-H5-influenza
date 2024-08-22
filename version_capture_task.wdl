@@ -40,7 +40,6 @@ task capture_versions {
         String workflow_name
         String workflow_version
         String project_name
-        String project_outdir
         String analysis_date
         File version_capture_py
         String docker
