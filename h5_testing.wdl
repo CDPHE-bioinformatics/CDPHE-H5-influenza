@@ -256,7 +256,7 @@ workflow h5 {
             workflow_version = w_meta.version,
             project_name = project_name,
             analysis_date = w_meta.analysis_date,
-            version_capture_py,
+            version_capture_py = version_capture_py,
             docker = 'mchether/py3-bio:v4'
     }
 
