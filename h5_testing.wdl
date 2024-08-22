@@ -251,10 +251,10 @@ workflow h5 {
 
     call vc.capture_versions as version_cap {
         input:
-            version_array,
+            version_array = version_array,
             workflow_name = 'h5_testing',
             workflow_version = w_meta.version,
-            project_name,
+            project_name = project_name,
             analysis_date = w_meta.analysis_date,
             version_capture_py,
             docker = 'mchether/py3-bio:v4'
