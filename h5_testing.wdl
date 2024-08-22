@@ -259,7 +259,7 @@ workflow h5 {
 
     call transfer as transfer_vc {
         input:
-            out_dir = primer_outdir,
+            out_dir = project_outdir,
             task_dir = 'summary_files',
             task_files = [version_cap.output_file],
             docker = utility_docker
