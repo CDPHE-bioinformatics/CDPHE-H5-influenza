@@ -244,8 +244,8 @@ workflow h5 {
     VersionInfo seqyclean_version = select_first(select_first(seqyclean.version_info))
     VersionInfo multiqc_version = select_first(multiqc_fastqc.version_info)
     VersionInfo samtools_version = select_first(select_first(select_first(align_bwa.samtools_version_info)))
-    VersionInfo bwa_version = select_first(select_first(select_first(align_bwa.samtools_version_info)))
-    VersionInfo ivar_version = select_first(select_first(select_first(align_bwa.bwa_version_info)))
+    VersionInfo bwa_version = select_first(select_first(select_first(align_bwa.bwa_version_info)))
+    VersionInfo ivar_version = select_first(select_first(select_first(align_bwa.ivar_version_info)))
     Array[VersionInfo] version_array = [fastqc_version, seqyclean_version, multiqc_version, 
                                 samtools_version, bwa_version, ivar_version]
 
