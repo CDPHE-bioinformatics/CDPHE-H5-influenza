@@ -54,13 +54,20 @@ workflow h5 {
     scatter (ps in ini.primer_schemes) {
         scatter (all_samp in all_samples) {
             if (all_samp.primer == ps.name) {
-                Sample primer_sample = all_samp
-                Int match_index = all_samp.i
+                # Only add to list if fastqs are not empty
+                if (size(all_samp.fastq1, "MiB") + size(all_samp.fastq2, "MiB") > 1) {
+                    Sample primer_sample = all_samp
+                    Int match_index = all_samp.i
+                }
+                if (size(all_samp.fastq1, "MiB") + size(all_samp.fastq2, "MiB") < 1) {
+                    Sample empty_sample = all_samp
+                }
             }
         }
-
-        # Only call downstream tasks if primer was used
         Array[Sample] primer_samples = select_all(primer_sample)
+        Array[Sample] empty_samples = select_all(empty_sample)
+        
+        # Only call downstream tasks if primer was used
         if (length(primer_samples) > 0) {
             String p_name = ps.name
             String primer_outdir = project_outdir + p_name + "/"
