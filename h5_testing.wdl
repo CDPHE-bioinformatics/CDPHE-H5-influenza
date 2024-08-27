@@ -55,11 +55,12 @@ workflow h5 {
         scatter (all_samp in all_samples) {
             if (all_samp.primer == ps.name) {
                 # Only add to list if fastqs are not empty
-                if (size(all_samp.fastq1, "MiB") + size(all_samp.fastq2, "MiB") > 1) {
+                Float fastqs_size = size([all_samp.fastq1, all_samp.fastq2], "MiB")
+                if (fastqs_size > 1) {
                     Sample primer_sample = all_samp
                     Int match_index = all_samp.i
                 }
-                if (size(all_samp.fastq1, "MiB") + size(all_samp.fastq2, "MiB") < 1) {
+                if (fastqs_size < 1) {
                     Sample empty_sample = all_samp
                 }
             }

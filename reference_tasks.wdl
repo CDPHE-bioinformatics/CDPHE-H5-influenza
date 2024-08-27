@@ -123,7 +123,7 @@ task align_bwa {
         String docker
     }
 
-    Float input_size = size(fastq1, "GiB") + size(fastq2, "GiB")
+    Float input_size = size([fastq1, fastq2], "GiB")
     Int dynamic_disk_size = ceil((input_size) * 10) + ceil(input_size) + 10
     String sam_fn = "~{sample_name}.sam"
     String bam_fn = "~{sample_name}_aln.sorted.bam"
