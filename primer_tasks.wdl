@@ -70,7 +70,7 @@ workflow primer_level_tasks {
         input:
             files = seqyclean.summary_stats,
             module = "seqyclean",
-            cl_config = 'extra_fn_clean_exts: [ "_coverage", "_stats"]'
+            cl_config = 'extra_fn_clean_exts: [ "_coverage", "_stats"]',
             docker = multiqc_docker
     }
     
