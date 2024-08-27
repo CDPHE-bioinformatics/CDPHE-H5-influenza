@@ -32,11 +32,12 @@ task multiqc {
 
     String? task_prefix = if defined(task_name) then "~{module}_~{task_name}" else None
     String html_fn = "~{select_first([task_prefix, module])}_multiqc_report.html"
-    String base_cl_config = "--cl-config show_analysis_paths: False"
+    String base_cl_config = '--cl-config "show_analysis_paths: False"'
 
     command <<<
         multiqc -m "~{module}" -l ~{write_lines(files)} -n ~{html_fn} \
-            ~{if defined(cl_config) then "~{base_cl_config}'\n~{cl_config}'" else base_cl_config}  
+        ~{if defined(cl_config) then "~{base_cl_config}\n~{cl_config}" else base_cl_config}  
+
         multiqc --version | awk ' {print $3}' | tee VERSION
     >>>
 
