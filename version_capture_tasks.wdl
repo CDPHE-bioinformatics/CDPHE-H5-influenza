@@ -13,7 +13,8 @@ task workflow_metadata {
         String docker
     }
     meta {
-        description: "capture repository version release"
+        description: "capture GitHub repository version"
+        volatile: true
     }
 
     command <<<
@@ -31,6 +32,10 @@ task workflow_metadata {
 }
 
 task capture_versions {
+    meta {
+        volatile: true
+    }
+
     input {
         Array[VersionInfo] version_array
         String workflow_name = 'h5_testing'
