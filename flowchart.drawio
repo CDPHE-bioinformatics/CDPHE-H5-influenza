@@ -1,9 +1,53 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36" version="24.7.10">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36" version="24.7.12">
   <diagram name="Page-1" id="GMDDIx7yCkg-b94p4l4E">
-    <mxGraphModel>
+    <mxGraphModel dx="1434" dy="738" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="-yUBXSq1VkXAMvy7D73L-1" value="&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;H5_testing&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=center;horizontal=1;verticalAlign=top;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="440" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="-yUBXSq1VkXAMvy7D73L-3" value="&lt;div style=&quot;&quot;&gt;&lt;b style=&quot;background-color: initial;&quot;&gt;Inputs&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;Array[String] primers&lt;/div&gt;&lt;div&gt;Array[String] samples&lt;/div&gt;&lt;div&gt;Array[File] fastq1s&lt;/div&gt;&lt;div&gt;Array[File] fastq2s&lt;/div&gt;&lt;div&gt;String project_name&lt;/div&gt;&lt;div&gt;String gs_dir&lt;/div&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="120" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="-yUBXSq1VkXAMvy7D73L-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.005;entryY=0.4;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="-yUBXSq1VkXAMvy7D73L-14" target="-yUBXSq1VkXAMvy7D73L-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="250" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-yUBXSq1VkXAMvy7D73L-13" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(251, 251, 251); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;&quot;&gt;1. Get workflow metadata&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="70" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="-yUBXSq1VkXAMvy7D73L-14" value="&lt;br&gt;&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(251, 251, 251); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;&quot;&gt;2. Declare reference and primer scheme struct objects&lt;/span&gt;&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="130" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-yUBXSq1VkXAMvy7D73L-15" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="520" y="250" width="220" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="-yUBXSq1VkXAMvy7D73L-4" value="H5_structs" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="-yUBXSq1VkXAMvy7D73L-15">
+          <mxGeometry width="220" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="-yUBXSq1VkXAMvy7D73L-5" value="&lt;div style=&quot;&quot;&gt;&lt;b style=&quot;background-color: initial;&quot;&gt;Inputs&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;Reference fastas&lt;/div&gt;&lt;/div&gt;&lt;div&gt;Primer bed files&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="-yUBXSq1VkXAMvy7D73L-15">
+          <mxGeometry x="60" y="30" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="-yUBXSq1VkXAMvy7D73L-6" value="&lt;div style=&quot;&quot;&gt;&lt;b style=&quot;background-color: initial;&quot;&gt;Outputs&lt;/b&gt;&lt;/div&gt;&lt;div&gt;Array[PrimerScheme] primer_schemes&lt;br&gt;&lt;/div&gt;&lt;div&gt;Array[Reference] references&lt;br&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fillColor=#fad9d5;strokeColor=#ae4132;" vertex="1" parent="-yUBXSq1VkXAMvy7D73L-15">
+          <mxGeometry x="5" y="90" width="210" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="-yUBXSq1VkXAMvy7D73L-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="-yUBXSq1VkXAMvy7D73L-15" source="-yUBXSq1VkXAMvy7D73L-5" target="-yUBXSq1VkXAMvy7D73L-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="-yUBXSq1VkXAMvy7D73L-19" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="560" y="30" width="140" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="-yUBXSq1VkXAMvy7D73L-16" value="version_capture_tasks" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="-yUBXSq1VkXAMvy7D73L-19">
+          <mxGeometry width="140" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="-yUBXSq1VkXAMvy7D73L-17" value="&lt;b&gt;workflow_metadata&lt;/b&gt;&lt;div&gt;outputs:&lt;/div&gt;&lt;div&gt;analysis date&lt;/div&gt;&lt;div&gt;workflow version&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6d0de;gradientColor=#d5739d;strokeColor=#996185;" vertex="1" parent="-yUBXSq1VkXAMvy7D73L-19">
+          <mxGeometry x="10" y="30" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-yUBXSq1VkXAMvy7D73L-18" value="&lt;b&gt;capture_versions&lt;/b&gt;&lt;div&gt;output:&lt;/div&gt;&lt;div&gt;version capture file&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6d0de;gradientColor=#d5739d;strokeColor=#996185;" vertex="1" parent="-yUBXSq1VkXAMvy7D73L-19">
+          <mxGeometry x="10" y="100" width="120" height="60" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
