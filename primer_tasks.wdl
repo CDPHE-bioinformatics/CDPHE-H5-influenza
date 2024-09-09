@@ -5,7 +5,6 @@ import "other_tasks.wdl" as ot
 workflow primer_level_tasks {
     input {
         Array[Sample] primer_samples
-        String primer_name
         String primer_outdir
         String fastqc_docker
         String seqyclean_docker
@@ -46,15 +45,15 @@ workflow primer_level_tasks {
                 docker = fastqc_docker
         }
 
-        # call sample_qc_file as sample_qc_file_clean {
-        #     input: 
-        #         sample_name = sample.name,
-        #         fastqc1_data = fastqc_clean.fastqc1_data,
-        #         fastqc2_data = fastqc_clean.fastqc2_data,
-        #         docker = python_docker
-        # }
-
     }
+
+    # call sample_qc_file as sample_qc_file_clean {
+    #     input: 
+    #         sample_name = sample.name,
+    #         fastqc1_data = fastqc_clean.fastqc1_data,
+    #         fastqc2_data = fastqc_clean.fastqc2_data,
+    #         docker = python_docker
+    # }
 
     # Call multiqc
     call ot.multiqc as multiqc_fastqc {
