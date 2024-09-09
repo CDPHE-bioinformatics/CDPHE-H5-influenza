@@ -1,14 +1,11 @@
 version development
 
-<<<<<<< HEAD
 import "h5_structs.wdl" as initializations
 import "version_capture_tasks.wdl" as vc
 import "reference_tasks.wdl" as rt
 import "primer_tasks.wdl" as pt
 import "other_tasks.wdl" as ot
 
-=======
->>>>>>> e1de624e5e61f487a045b7570f72067f343ebce8
 workflow h5 {
     input {
         Array[String] primers
@@ -34,7 +31,6 @@ workflow h5 {
 
     Array[Int] indexes = range(length(samples))
 
-<<<<<<< HEAD
     call vc.workflow_metadata as w_meta { input: docker = jammy_docker }
     String project_outdir = gs_dir + "/" +  project_name + "/terra_outputs/" + w_meta.version + "/"
 
@@ -156,7 +152,3 @@ workflow h5 {
 
 
 
-=======
-    String project_outdir = gs_dir + "/" +  project_name + "/"
-}
->>>>>>> e1de624e5e61f487a045b7570f72067f343ebce8
