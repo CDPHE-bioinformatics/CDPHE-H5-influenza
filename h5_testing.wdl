@@ -1,6 +1,10 @@
 version development
 
-import "h5_structs.wdl" as sub
+import "h5_structs.wdl" as initializations
+import "version_capture_tasks.wdl" as vc
+import "reference_tasks.wdl" as rt
+import "primer_tasks.wdl" as pt
+import "other_tasks.wdl" as ot
 
 workflow h5 {
     input {
@@ -10,7 +14,6 @@ workflow h5 {
         Array[File] fastq2s
         String project_name
         String gs_dir
-        File contaminants_fasta
     }
 
     meta {
@@ -20,24 +23,19 @@ workflow h5 {
     # private declarations
     String fastqc_docker = 'staphb/fastqc:0.12.1'
     String seqyclean_docker = 'staphb/seqyclean:1.10.09'
-    String bwa_docker = 'staphb/bwa:0.7.17'
-    String samtools_docker = 'staphb/samtools:1.10'
     String ivar_docker = 'staphb/ivar:1.4.2'
     String python_docker = 'ariannaesmith/py3.10.9-bio'
-    String viral_core_docker = 'quay.io/broadinstitute/viral-core:2.2.3'
-    String multiqc_docker = 'multiqc/multiqc:1.8'
+    String multiqc_docker = 'multiqc/multiqc:v1.24'
     String jammy_docker = 'ubuntu:jammy-20240627.1'
     String utility_docker = 'theiagen/utility:1.0'
-    String git_docker = 'ariannaesmith/git:0.0.0'
 
     Array[Int] indexes = range(length(samples))
 
-    String project_outdir = gs_dir + "/" +  project_name + "/"
-
-    call repo_version {input: docker = git_docker}
+    call vc.workflow_metadata as w_meta { input: docker = jammy_docker }
+    String project_outdir = gs_dir + "/" +  project_name + "/terra_outputs/" + w_meta.version + "/"
 
     # Struct initilizations (subworkflow)
-    call sub.declare_structs as s {}
+    call initializations.declare_structs as ini {}
 
     # Scatter samples to create structs
     scatter (idx in indexes) {
@@ -51,526 +49,106 @@ workflow h5 {
     }
 
     Array[Sample] all_samples = sample
+
     # Group samples by primer
-    scatter (ps in s.primer_schemes) {
-        
+    scatter (ps in ini.primer_schemes) {
         scatter (all_samp in all_samples) {
             if (all_samp.primer == ps.name) {
-                Sample primer_sample = all_samp
-                Int match_index = all_samp.i
+                # Only add to list if fastqs are not empty
+                Float fastqs_size = size([all_samp.fastq1, all_samp.fastq2], "MiB")
+                if (fastqs_size > 1) {
+                    Sample primer_sample = all_samp
+                    Int match_index = all_samp.i
+                }
+                if (fastqs_size < 1) {
+                    Sample empty_sample = all_samp
+                }
             }
         }
-
-        # Only call downstream tasks if primer was used
         Array[Sample] primer_samples = select_all(primer_sample)
+        Array[Sample] empty_samples = select_all(empty_sample)
+        
+        # Only call downstream tasks if primer was used
         if (length(primer_samples) > 0) {
-
-            # Call primer level tasks
-            scatter (p_samp in primer_samples) {
-                # Call sample level tasks
-                call fastqc as fastqc_raw {
-                    input: 
-                        fastq1 = p_samp.fastq1, 
-                        fastq2 = p_samp.fastq2, 
-                        docker = fastqc_docker
-                }
-
-                # Anything calling/using output from a python script task is commented out right now
-                # call sample_qc_file as sample_qc_file_raw {input: 
-                #         sample_name = p_samp.name,
-                #         fastqc1_data = fastqc_raw.fastqc1_data,
-                #         fastqc2_data = fastqc_raw.fastqc2_data,
-                #         docker = python_docker
-                # }
-                
-                call seqyclean {
-                    input: 
-                        sample = p_samp,
-                        contaminants_fasta = contaminants_fasta,
-                        docker = seqyclean_docker
-                }
-
-                call fastqc as fastqc_clean {
-                    input: 
-                        fastq1 = seqyclean.PE1, 
-                        fastq2 = seqyclean.PE2, 
-                        docker = fastqc_docker
-                }
-
-                # call sample_qc_file as sample_qc_file_clean {
-                #     input: 
-                #         sample_name = p_samp.name,
-                #         fastqc1_data = fastqc_clean.fastqc1_data,
-                #         fastqc2_data = fastqc_clean.fastqc2_data,
-                #         docker = python_docker
-                # }
-    
-            }
-
-            # Call multiqc
-            call multiqc as multiqc_raw {
+            String p_name = ps.name
+            String primer_outdir = project_outdir + p_name + "/"
+            # Call primer level tasks (subworkflow)
+            call pt.primer_level_tasks as p_sub {
                 input:
-                    fastqcs_data = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
-                    fastqc_type = "raw",
-                    docker = multiqc_docker
+                    primer_samples = primer_samples,
+                    primer_name = p_name,
+                    primer_outdir = primer_outdir,
+                    fastqc_docker = fastqc_docker,
+                    seqyclean_docker = seqyclean_docker,
+                    python_docker = python_docker,
+                    multiqc_docker = multiqc_docker,
+                    utility_docker = utility_docker
             }
 
-            call multiqc as multiqc_clean {
-                input:
-                    fastqcs_data = flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
-                    fastqc_type = "clean",
-                    docker = multiqc_docker
-            }
-            
-            # Transfer primer level files
-            String primer_outdir = project_outdir + ps.name + "/"
-            Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean", "summary_files"]
-            Array[Array[File]] primer_task_files = [flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
-                                flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
-                                flatten([seqyclean.PE1, seqyclean.PE2]),
-                                [multiqc_raw.html_report, multiqc_clean.html_report]]       
+            Array[File] seqyclean_output = flatten([p_sub.cleaned_PE1, p_sub.cleaned_PE2])
 
-            scatter (dir_files in zip(primer_task_dirs, primer_task_files)) {       
-                call transfer as transfer_primer_tasks {
-                    input:
-                        out_dir = primer_outdir,
-                        task_dir = dir_files.left,
-                        task_files = dir_files.right,
-                        docker = utility_docker
-                }
-            }
-
-
-
-            # Call reference level tasks
+            # Call reference level tasks (subworkflow)
             Array[Int] num_samples = range(length(primer_samples))            
             scatter (p_ref in ps.references) {
-                String reference_outdir = primer_outdir + p_ref.name + "/"
 
-                scatter (n in num_samples) {
-                    Sample r_samp = primer_samples[n]
-                    File PE1 = seqyclean.PE1[n]
-                    File PE2 = seqyclean.PE2[n]
-
-                    call align_bwa {
-                        input:
-                            sample_name = r_samp.name,
-                            fastq1 = PE1,
-                            fastq2 = PE2,
-                            reference_name = p_ref.name,
-                            reference_fasta = p_ref.fasta,
-                            docker = viral_core_docker
-                    }  
-
-                    call trim_primers_ivar {
-                        input: 
-                            sample_name = r_samp.name,
-                            bam = align_bwa.bam,
-                            primer_bed = ps.bed,
-                            docker = ivar_docker
-                    }
-
-                    call generate_consensus_ivar {
-                        input: 
-                            sample_name = r_samp.name,
-                            trim_sort_bam = trim_primers_ivar.trim_sort_bam,
-                            reference_fasta = p_ref.fasta,
-                            docker = ivar_docker
-                    }   
-
-                    call alignment_metrics {
-                        input:
-                            sample_name = r_samp.name,
-                            trim_sort_bam = trim_primers_ivar.trim_sort_bam,
-                            docker = samtools_docker
-                    }
-
-                    # call calculate_coverage_stats {
-                    #     input:
-                    #         sample_name = r_samp.name,
-                    #         ref_length = p_ref.length,
-                    #         seq_ref_length = p_ref.captured_length,
-                    #         consensus_fasta = generate_consensus_ivar.consensus_fasta,
-                    #         docker = python_docker
-                    # }
-
-                    # call concat_sample_reference_metrics {
-                    #     input: 
-                    #         sample_name = r_samp.name,
-                    #         samtools_coverage = alignment_metrics.coverage,
-                    #         samtools_stats = alignment_metrics.stats,
-                    #         coverage_stats = calculate_coverage_stats.coverage_stats,
-                    #         docker = python_docker
-                    # }
-
-                } 
-
-                Array[String] reference_task_dirs = ["alignments", "consensus_sequences", "metrics"]
-                Array[Array[File]] reference_task_files = [flatten([trim_primers_ivar.trim_sort_bam, trim_primers_ivar.trim_sort_bai,]),
-                                                        generate_consensus_ivar.consensus_fasta,
-                                                        flatten([alignment_metrics.coverage, alignment_metrics.stats])]
-
-                scatter (dir_files in zip(reference_task_dirs, reference_task_files)) {       
-                    call transfer as transfer_reference_tasks {
-                        input:
-                            out_dir = reference_outdir,
-                            task_dir = dir_files.left,
-                            task_files = dir_files.right,
-                            docker = utility_docker
-                    }
-                }
+                String ref_name = p_ref.name
+                call rt.reference_level_tasks as r_sub {
+                    input: 
+                        reference = p_ref,
+                        reference_outdir = primer_outdir + ref_name + "/",
+                        num_samples = num_samples,
+                        primer_samples = primer_samples,
+                        cleaned_PE1 = p_sub.cleaned_PE1,
+                        cleaned_PE2 = p_sub.cleaned_PE2,
+                        primer_bed = ps.bed,
+                        ivar_docker = ivar_docker,
+                        python_docker = python_docker,
+                        multiqc_docker = multiqc_docker,
+                        utility_docker = utility_docker,
+                }   
             }
         }
-
-
     }
+
+    # Collect various version information
+    VersionInfo fastqc_version = select_first(p_sub.fastqc_version)
+    VersionInfo seqyclean_version = select_first(p_sub.seqyclean_version)
+    VersionInfo multiqc_version = select_first(p_sub.multiqc_version)
+    VersionInfo samtools_version = select_first(select_first(r_sub.samtools_version))
+    VersionInfo bwa_version = select_first(select_first(r_sub.bwa_version))
+    VersionInfo ivar_version = select_first(select_first(r_sub.ivar_version))
+    Array[VersionInfo] version_array = [fastqc_version, seqyclean_version, multiqc_version, 
+                                samtools_version, bwa_version, ivar_version]
+
+    call vc.capture_versions as version_cap {
+        input:
+            version_array = version_array,
+            workflow_version = w_meta.version,
+            project_name = project_name,
+            analysis_date = w_meta.analysis_date
+    }
+
+    call ot.transfer as transfer_vc {
+        input:
+            out_dir = project_outdir,
+            task_dir = 'summary_files',
+            task_files = [version_cap.output_file],
+            docker = utility_docker
+    }
+
+    output { 
+        Array[String] primers_used = select_all(p_name)
+        Array[Array[File]] p_fastqc_raw_outputs = select_all(p_sub.fastqc_raw_outputs)
+        Array[Array[File]] p_fastqc_clean_outputs = select_all(p_sub.fastqc_clean_outputs)
+        Array[Array[File]] p_seqyclean_outputs = select_all(seqyclean_output)
+        Array[Array[File]] p_summary_outputs = select_all(p_sub.p_summary_outputs)
+        Array[Array[String]] p_refs_used = select_all(select_all(ref_name))
+        Array[Array[Array[File]]] p_refs_alignment_outputs = select_all(r_sub.alignment_outputs)
+        Array[Array[Array[File]]] p_refs_consensus_outputs = select_all(r_sub.consensus_outputs)
+        Array[Array[Array[File]]] p_refs_summary_outputs = select_all(r_sub.ref_summary_outputs)
+        Array[VersionInfo] version_capture = version_array
+    }    
 }
 
-task repo_version {
-    input {
-        String docker
-    }
 
-    command <<<
-        git describe --tags --abbrev=0 | tee repo_version
-    >>>
-    
-    output {
-        String version = read_string("repo_version")
-    }
-
-    runtime {
-        docker: docker
-    }
-}
-
-task transfer {
-    input {
-        String out_dir
-        String task_dir
-        Array[File] task_files
-        String docker
-    }
-
-    command <<<
-        cat "~{write_lines(task_files)}" | gsutil -m cp -I "~{out_dir}~{task_dir}/"
-    >>>
-
-    runtime {
-        #cpu: 
-        #memory: 
-        docker: docker
-    }
-}
-
-task multiqc {
-    input {
-        Array[File] fastqcs_data
-        String fastqc_type
-        String docker
-    }
-
-    String html_fn = "fastqc_~{fastqc_type}_multiqc_report.html"
-
-    command <<<
-        multiqc -m "fastqc" -l ~{write_lines(fastqcs_data)} -n ~{html_fn} --cl-config "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }" 
-    >>>
-
-    output {
-        File html_report = html_fn
-    }
-
-    runtime {
-        #cpu: 
-        #memory: 
-        docker: docker
-    }
-}
-
-task fastqc {
-    input {
-        File fastq1
-        File fastq2
-        String docker
-    }
-
-    String fastq1_name = basename(fastq1, ".fastq.gz")
-    String fastq2_name = basename(fastq2, ".fastq.gz")
-
-    command <<<
-        fastqc --outdir $PWD --extract --delete ~{fastq1} ~{fastq2}
-        fastqc --version | awk '/FastQC/ {print $2}' | tee VERSION  
-        cp "~{fastq1_name}_fastqc/fastqc_data.txt" "~{fastq1_name}_fastqc_data.txt"
-        cp "~{fastq2_name}_fastqc/fastqc_data.txt" "~{fastq2_name}_fastqc_data.txt"  
-    >>>
-
-    output {
-        File fastqc1_data = "~{fastq1_name}_fastqc_data.txt"
-        File fastqc2_data = "~{fastq2_name}_fastqc_data.txt"
-        String version = read_string('VERSION')
-    }
-
-    runtime {
-        #cpu: 
-        #memory: 
-        docker: docker
-    }
-}
-
-task sample_qc_file {
-    input {
-        String sample_name
-        File fastqc1_data
-        File fastqc2_data
-        String docker
-    }
-
-    command <<<
-        # python things
-    >>>
-
-    output {
-        File summary_metrics = "${sample_name}_summary_metrics.tsv"
-    }
-
-    runtime {
-        #cpu: 
-        #memory: 
-        docker: docker
-    }
-}
-
-task seqyclean {
-    input {
-        Sample sample
-        File contaminants_fasta
-        String docker
-    }
-
-    String out_name = "seqyclean/~{sample.name}_clean"
-
-    command <<<
-        seqyclean -minlen 25 -qual 30 30 -gz -1 ~{sample.fastq1} -2 ~{sample.fastq2} -c ~{contaminants_fasta} -o ~{out_name}
-    >>>
-
-    output {
-        File PE1 = "seqyclean/~{sample.name}_clean_PE1.fastq.gz"
-        File PE2 = "seqyclean/~{sample.name}_clean_PE2.fastq.gz"
-    }
-
-    runtime {
-        #cpu: 
-        #memory: 
-        docker: docker
-    }
-}
-
-task align_bwa {
-    input {
-        String sample_name
-        File fastq1
-        File fastq2
-        String reference_name
-        File reference_fasta
-        String docker
-    }
-
-    String sam_fn = "~{sample_name}.sam"
-    String bam_fn = "~{sample_name}_aln.sorted.bam"
-
-    command <<<
-        samtools --version-only | tee samtools_version
-        bwa index -p ~{reference_name} -a is ~{reference_fasta}
-        bwa mem -t 6 ~{reference_name} ~{fastq1} ~{fastq2} > ~{sam_fn}
-        samtools view -b -@ 6 ~{sam_fn} | samtools sort -m 2G -@ 6 -o ~{bam_fn}
-    >>>
-
-    output {
-        String samtools_version = read_string('samtools_version')
-        File bam = bam_fn
-    }
-
-    runtime {
-        cpu: 3
-        memory: "12 GB"
-        docker: docker
-    }
-}
-
-task trim_primers_ivar {
-    input {
-        String sample_name
-        File bam
-        File primer_bed
-        String docker
-    }
-
-    String trim_fn = "~{sample_name}_trimmed.bam"
-    String trim_sort_bam_fn = "~{sample_name}_trimmed.sorted.bam"
-    String trim_sort_bai_fn = "~{sample_name}_trimmed.sorted.bai"
-    
-    command <<<
-        ivar trim -e -i ~{bam} -b ~{primer_bed} -p ~{trim_fn}
-        samtools sort -@ 6 -o ~{trim_sort_bam_fn} ~{trim_fn}
-        samtools index -@ 6 ~{trim_sort_bam_fn} -o ~{trim_sort_bai_fn}
-    >>>
-
-    output {
-        File trim_sort_bam = trim_sort_bam_fn
-        File trim_sort_bai = trim_sort_bai_fn
-    }
-
-    runtime {
-        cpu: 3
-        memory: "12 GB"
-        docker: docker
-    }
-}
-
-task generate_consensus_ivar {
-    input {
-        String sample_name
-        File trim_sort_bam
-        File reference_fasta
-        String docker
-    }
-
-    String pileup_fn = "~{sample_name}_pileup.txt"
-    String consensus_fn_prefix = "~{sample_name}_consensus"
-
-    command <<<
-        samtools faidx ~{reference_fasta}
-        samtools mpileup -A -aa -d 600000 -B -Q 20 -q 20 -f ~{reference_fasta} ~{trim_sort_bam} -o ~{pileup_fn}
-        cat ~{pileup_fn} | ivar consensus -p ~{consensus_fn_prefix} -q 20 -t 0.6 -m 10
-    >>>
-
-    output {
-        File pileup = pileup_fn
-        File consensus_fasta = consensus_fn_prefix + ".fa"
-    }
-
-    runtime {
-        #cpu: 
-        #memory: 
-        docker: docker
-    }
-}
-
-task alignment_metrics {
-    input {
-        String sample_name
-        File trim_sort_bam
-        String docker
-    }
-
-    String coverage_fn = "~{sample_name}_coverage.txt"
-    String stats_fn = "~{sample_name}_stats.txt"
-
-    command <<<
-        samtools coverage -o ~{coverage_fn} ~{trim_sort_bam}
-        samtools stats ~{trim_sort_bam} > ~{stats_fn}
-    >>>
-
-    output {
-        File coverage = coverage_fn
-        File stats = stats_fn
-    }
-
-    runtime {
-        cpu: 2
-        memory: "4 GB"
-        docker: docker
-    }
-}
-
-task calculate_coverage_stats {
-    input {
-        Int ref_length
-        Int seq_ref_length
-        String sample_name
-        File consensus_fasta
-        String docker
-    }
-
-    command <<<
-        # python stuff
-    >>>
-
-    output {
-        File coverage_stats = "~{sample_name}_coverage_stats.csv"
-    }
-
-    runtime {
-        #cpu: 
-        #memory: 
-        docker: docker
-    }
-}
-
-task concat_sample_reference_metrics {
-    input {
-        String sample_name
-        File samtools_coverage
-        File samtools_stats
-        File coverage_stats
-        String docker
-    }
-
-    command <<<
-        # python stuff
-    >>>
-
-    output {
-        File sample_reference_metrics = "~{sample_name}_reference_metrics.csv"
-    }
-
-    runtime {
-        #cpu: 
-        #memory: 
-        docker: docker
-    }
-}
-
-task concat_sample_metrics {
-    input {
-        String sample_name
-        Array[File] sample_reference_metrics
-        String docker
-    }
-
-    command <<<
-        # python stuff
-    >>>
-
-    output {
-        File sample_metrics = "~{sample_name}_metrics.csv"
-    }
-
-    runtime {
-        #cpu: 
-        #memory: 
-        docker: docker
-    }
-}
-
-task concat_all_samples_metrics {
-    input {
-        Array[File] sample_metrics_files
-        String docker
-    }
-
-    command <<<
-        # python stuff
-    >>>
-
-    output {
-        File samples_metrics = "summary_metrics.csv"
-    }
-
-    runtime {
-        #cpu: 
-        #memory: 
-        docker: docker
-    }
-}
 
