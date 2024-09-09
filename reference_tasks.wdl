@@ -55,7 +55,7 @@ workflow reference_level_tasks {
                 docker = ivar_docker
         }
 
-        # call calculate_coverage_stats {
+        # call calculate_percent_coverage {
         #     input:
         #         sample_name = sample.name,
         #         ref_length = reference.length,
@@ -69,7 +69,7 @@ workflow reference_level_tasks {
         #         sample_name = sample.name,
         #         samtools_coverage = alignment_metrics.coverage,
         #         samtools_stats = alignment_metrics.stats,
-        #         coverage_stats = calculate_coverage_stats.coverage_stats,
+        #         coverage_stats = calculate_percent_coverage.coverage_stats,
         #         docker = python_docker
         # }
 
@@ -259,7 +259,7 @@ task alignment_metrics {
     }
 }
 
-task calculate_coverage_stats {
+task calculate_percent_coverage {
     input {
         Int ref_length
         Int seq_ref_length
