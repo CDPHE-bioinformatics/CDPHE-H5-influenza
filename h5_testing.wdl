@@ -76,7 +76,6 @@ workflow h5 {
             call pt.primer_level_tasks as p_sub {
                 input:
                     primer_samples = primer_samples,
-                    primer_name = p_name,
                     primer_outdir = primer_outdir,
                     fastqc_docker = fastqc_docker,
                     seqyclean_docker = seqyclean_docker,
