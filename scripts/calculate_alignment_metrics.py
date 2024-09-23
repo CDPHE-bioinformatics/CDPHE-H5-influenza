@@ -10,6 +10,33 @@ from Bio import SeqIO
 import argparse
 import json
 
+# Function to calculate reference lengths with and without primers
+def calculate_reference_lengths(reference_sequence_paths, bed_df):
+    reference_lengths = {}
+    for ref_path in reference_sequence_paths:
+        records = list(SeqIO.parse(ref_path, 'fasta'))
+        num_records = len(records)
+        if num_records > 1:
+            segment_lengths = {}
+            for segment in records:
+                total_length = len(segment.seq)
+                segment_bed_df = bed_df[bed_df[0] == segment.id]
+
+                # Calculate primer insert length
+                primer_insert_length = segment_bed_df[1].max() - segment_bed_df[2].min()
+                segment_lengths[segment.id] = (total_length, primer_insert_length)
+            reference_lengths[ref_path] = segment_lengths
+        else:
+            record = records[0]
+            total_length = len(record.seq)
+            segment_bed_df = bed_df[bed_df[0] == record.id]
+            if segment_bed_df.empty:
+                raise ValueError(f'Reference {record.id} not found in BED')
+            primer_insert_length = segment_bed_df[1].max() - segment_bed_df[2].min()
+            reference_lengths[ref_path] = (total_length, primer_insert_length)
+
+    return reference_lengths
+
 # Function to calculate percent coverage
 def calculate_percent_coverage(sample, consensus, total_reference_length, primer_insert_length, aln_metrics_dir):
     record = SeqIO.read(consensus, 'fasta')
@@ -27,12 +54,8 @@ def calculate_percent_coverage(sample, consensus, total_reference_length, primer
 
     # Generate reference and subdir paths
     consensus_path_split = consensus.split('/')
-    if len(consensus_path_split) == 4:
-        reference = f'{consensus_path_split[1]}: {consensus_path_split[2]}'
-        subdir = os.path.join(consensus_path_split[1], consensus_path_split[2])
-    else:
-        reference = consensus_path_split[1]
-        subdir = consensus_path_split[1]
+    reference = f'{consensus_path_split[1]}: {consensus_path_split[2]}' if len(consensus_path_split) == 4 else consensus_path_split[1]
+    subdir = os.path.join(consensus_path_split[1], consensus_path_split[2]) if len(consensus_path_split) == 4 else consensus_path_split[1]
 
     # Create DataFrame for percent coverage results
     df = pd.DataFrame({
@@ -106,35 +129,40 @@ def summarize_coverage(sample, stats_dir, wd, aln_metrics_dir):
 
     return df
 
-
 def main():
     parser = argparse.ArgumentParser(description='Calculate alignment metrics and percent coverage.')
     parser.add_argument('sample_names', nargs='+', help='List of sample names')
-    parser.add_argument('reference_lengths', help='Path to a file with reference lengths')
     parser.add_argument('consensus_dir', help='Directory containing consensus files')
-    parser.add_argument('aln_metrics_dir', help='Directory to save alignment metrics')
     parser.add_argument('project_name', help='Name of the project')
-    parser.add_argument('reference_sequence_paths', help='Path to reference sequences')
+    parser.add_argument('reference_dir', help='Directory containing reference sequence files')
+    parser.add_argument('bed_file', help='Path to BED file with primer information')
 
     args = parser.parse_args()
 
-    # sample_names = ['2407110180', 'SG20240710']
-    # consensus_dir = /home/irin_paul/h5/test_h5_0005_nextseq/avrl_h5n1_250bp/consensus_sequences
-    # aln_metrics_dir = /home/irin_paul/h5/test_h5_0005_nextseq/avrl_h5n1_250bp/metrics
-    # project_name = avrl_h5n1
+    # example usage:
+    # ./calculate_alignment_metrics.py sample1 sample2 \
+    # /path/to/consensus_directory \
+    # project_name
+    # /path/to/reference_directory \
+    # /path/to/bed_file
 
-    # Load reference lengths and sequence paths
-    with open(args.reference_lengths) as f:
-        reference_lengths = json.load(f)
-    
-    reference_sequence_paths = args.reference_sequence_paths.split(',')
+    # Load BED file into DataFrame
+    bed_df = pd.read_csv(args.bed_file, sep='\t', header=None)
+
+    # Load reference lengths using the BED file and reference sequences
+    reference_sequence_paths = [os.path.join(args.reference_dir, f) for f in os.listdir(args.reference_dir) if f.endswith('.fasta')]
+    reference_lengths = calculate_reference_lengths(reference_sequence_paths, bed_df)
+
+    # Creating alignment metrics directory
+    aln_metrics_dir = os.path.join(os.getcwd(), f"{args.project_name}_alignment_metrics")
+    os.makedirs(aln_metrics_dir, exist_ok=True)
 
     percent_coverage_dfs = []
     for sample in args.sample_names:
         for ref, segments in reference_lengths.items():
             if isinstance(segments, dict):
                 for segment in segments:
-                    consensus = os.path.join(args.consensus_dir, ref, segment, f'{sample}{ref}{segment}_consensus.fa')
+                    consensus = os.path.join(args.consensus_dir, ref, segment, f'{sample}_{ref}_{segment}_consensus.fa')
                     percent_coverage_df = calculate_percent_coverage(
                         sample,
                         consensus,
@@ -167,11 +195,11 @@ def main():
             num_records = len(list(records))
             if num_records > 1:
                 for segment in SeqIO.parse(ref_path, format='fasta'):
-                    stats_dir = os.path.join(args.aln_metrics_dir, ref_path)
+                    stats_dir = os.path.join(args.aln_metrics_dir, os.path.basename(ref_path))
                     coverage_summary_df = summarize_coverage(sample, stats_dir, args.aln_metrics_dir, args.aln_metrics_dir)
                     coverage_summary_dfs.append(coverage_summary_df)
             else:
-                stats_dir = os.path.join(args.aln_metrics_dir, ref_path)
+                stats_dir = os.path.join(args.aln_metrics_dir, os.path.basename(ref_path))
                 coverage_summary_df = summarize_coverage(sample, stats_dir, args.aln_metrics_dir, args.aln_metrics_dir)
                 coverage_summary_dfs.append(coverage_summary_df)
 
@@ -179,7 +207,6 @@ def main():
     concat_coverage_summary_df = pd.concat(coverage_summary_dfs).reset_index(drop=True)
     concat_coverage_summary_outfile = os.path.join(args.aln_metrics_dir, f'{args.project_name}_aln_metrics_summary.csv')
     concat_coverage_summary_df.to_csv(concat_coverage_summary_outfile, index=False)
-
 
 if __name__ == "__main__":
     main()
