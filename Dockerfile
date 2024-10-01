@@ -1,14 +1,13 @@
-FROM ubuntu:22.04
+FROM python:3.10.12
 
 LABEL maintainer "Arianna Smith <arianna.smith@state.co.us>"
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
-COPY . .
+COPY scripts/* ./
 
-ARG DEBIAN_FRONTEND=noninteractive
+COPY requirements.txt ./
 
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends git-all
+RUN pip3 install -r requirements.txt
 
-CMD ["/bin/bash"]
+CMD [ "python3", "./test.py"]

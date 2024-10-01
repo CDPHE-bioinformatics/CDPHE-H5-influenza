@@ -11,10 +11,12 @@ workflow primer_level_tasks {
         String python_docker
         String multiqc_docker
         String utility_docker
+        String h5_scripts_docker
         File contaminants_fasta
     }
 
     scatter (sample in primer_samples) {
+        String sample_name = sample.name
         # Call sample level tasks
         call fastqc as fastqc_raw {
             input: 
@@ -22,14 +24,6 @@ workflow primer_level_tasks {
                 fastq2 = sample.fastq2, 
                 docker = fastqc_docker
         }
-
-        # Anything calling/using output from a python script task is commented out right now
-        # call sample_qc_file as sample_qc_file_raw {input: 
-        #         sample_name = sample.name,
-        #         fastqc1_data = fastqc_raw.fastqc1_data,
-        #         fastqc2_data = fastqc_raw.fastqc2_data,
-        #         docker = python_docker
-        # }
         
         call seqyclean {
             input: 
@@ -47,12 +41,20 @@ workflow primer_level_tasks {
 
     }
 
+    call sample_qc_file as sample_qc_file_raw {
+        input: 
+            sample_names = sample_name,
+            fastqc1_data_array = fastqc_raw.fastqc1_data,
+            fastqc2_data_array = fastqc_raw.fastqc2_data,
+            docker = h5_scripts_docker
+    }
+
     # call sample_qc_file as sample_qc_file_clean {
     #     input: 
     #         sample_name = sample.name,
     #         fastqc1_data = fastqc_clean.fastqc1_data,
     #         fastqc2_data = fastqc_clean.fastqc2_data,
-    #         docker = python_docker
+    #         docker = h5_scripts_docker
     # }
 
     # Call multiqc
@@ -142,18 +144,18 @@ task fastqc {
 
 task sample_qc_file {
     input {
-        String sample_name
-        File fastqc1_data
-        File fastqc2_data
+        Array[String] sample_names
+        Array[File] fastqc1_data_array
+        Array[File] fastqc2_data_array
         String docker
     }
 
     command <<<
-        # python things
+        python3 scripts/summarize_fastqc.py ~{sample_names} ~{fastqc1_data_array} ~{fastqc2_data_array}
     >>>
 
     output {
-        File summary_metrics = "${sample_name}_summary_metrics.tsv"
+        Array[File] summary_metrics = glob("*_summary_metrics.tsv")
     }
 
     runtime {

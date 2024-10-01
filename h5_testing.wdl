@@ -28,6 +28,7 @@ workflow h5 {
     String multiqc_docker = 'multiqc/multiqc:v1.24'
     String jammy_docker = 'ubuntu:jammy-20240627.1'
     String utility_docker = 'theiagen/utility:1.0'
+    String h5_scripts_docker = 'ariannaesmith/h5_python_scripts:latest'
 
     Array[Int] indexes = range(length(samples))
 
@@ -81,7 +82,8 @@ workflow h5 {
                     seqyclean_docker = seqyclean_docker,
                     python_docker = python_docker,
                     multiqc_docker = multiqc_docker,
-                    utility_docker = utility_docker
+                    utility_docker = utility_docker,
+                    h5_scripts_docker = h5_scripts_docker
             }
 
             Array[File] seqyclean_output = flatten([p_sub.cleaned_PE1, p_sub.cleaned_PE2])
@@ -104,6 +106,7 @@ workflow h5 {
                         python_docker = python_docker,
                         multiqc_docker = multiqc_docker,
                         utility_docker = utility_docker,
+                        h5_scripts_docker = h5_scripts_docker
                 }   
             }
         }

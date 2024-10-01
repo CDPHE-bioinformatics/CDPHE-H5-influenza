@@ -15,6 +15,7 @@ workflow reference_level_tasks {
         String python_docker
         String multiqc_docker
         String utility_docker
+        String h5_scripts_docker
     }
 
     scatter (n in num_samples) {
