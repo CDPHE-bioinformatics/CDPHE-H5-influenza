@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# get_summary_metrics.py
+# concat_fastqc_summary.py
 
 # This script combines the FastQC metrics from raw and cleaned fastq files and calculates additional metrics.
 
@@ -73,11 +73,14 @@ def main():
     # Call the function
     combined_df = combine_fastqc_summaries(args.sample_names, args.wd, args.project_name)
 
-    # example arguments:
+    # example usage:
     # sample_names = 2407110180 SG20240710
     # wd = /home/irin_paul/h5/test_h5_0005_nextseq/avrl_h5n1_250bp
     # project_name = avrl_h5n1
 
+    # command <<< 
+    #         python3 get_summary_metrics.py ~{sample_names} ~{wd} ~{project_name}
+    #     >>>
 
 if __name__ == "__main__":
     main()

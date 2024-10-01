@@ -2,78 +2,62 @@
 
 # summarize_fastqc.py
 
-# This script processes the FastQC output for raw/cleaned FASTQ files and extracts quality metrics.
+# This script processes FastQC output for raw/cleaned FASTQ files and extracts quality metrics.
 
-import os
-import glob
 import subprocess
 import pandas as pd
 import argparse
 
-def summarize_reads(sample_names, fastqc_dir):
-    for sample in sample_names:
-        print(f"Processing sample: {sample}")
-        
-        # set outpath
+def get_fastqc_metrics(fastqc_file):
+    """Extract Total Sequences, Poor Quality Sequences, and Sequence Length from a FastQC data file."""
+    metrics = {}
+    grep_commands = {
+        "Total Sequences": "r_total_reads",
+        "Sequences flagged as poor quality": "flagged_reads_as_poor_quality",
+        "Sequence length": "read_len"
+    }
+    for pattern, metric_name in grep_commands.items():
+        command = f'grep "{pattern}" {fastqc_file} | cut -f 2'
+        metrics[metric_name] = subprocess.check_output(command, shell=True, text=True).strip()
+    return metrics
 
-        outpath = os.path.join(fastqc_dir, sample)
-        os.makedirs(outpath, exist_ok=True)
+def summarize_reads(sample_names, fastqc1_data_array, fastqc2_data_array):
+    """Summarize metrics for each sample from FastQC data files for R1 and R2."""
+    for i in range(len(sample_names)):
+        sample_name = sample_names[i]
+        fastqc1_data = fastqc1_data_array[i]
+        fastqc2_data = fastqc2_data_array[i]
 
-        # create dataframe
-        df = pd.DataFrame()
-        df['sample_name'] = [sample]
-        
+        print(f"Processing sample: {sample_name}")
 
-        # R1
-        path = glob.glob(os.path.join(fastqc_dir, f'{sample}*1_fastqc_data.txt'))[0]
-        
+        # Extract metrics for R1 and R2
+        metrics_r1 = get_fastqc_metrics(fastqc1_data)
+        metrics_r2 = get_fastqc_metrics(fastqc2_data)
 
-        command = f'cat {path} | grep "Total Sequences" | cut -f 2'
-        total_seqs = subprocess.check_output(command, shell=True, text=True).strip()
-        df['r1_total_reads'] = [total_seqs]
+        # Combine metrics in a dataframe
+        df = pd.DataFrame({
+            'sample_name': [sample_name],
+            'r1_total_reads': [metrics_r1['r_total_reads']],
+            'r1_flagged_reads_as_poor_quality': [metrics_r1['flagged_reads_as_poor_quality']],
+            'r1_read_len': [metrics_r1['read_len']],
+            'r2_total_reads': [metrics_r2['r_total_reads']],
+            'r2_flagged_reads_as_poor_quality': [metrics_r2['flagged_reads_as_poor_quality']],
+            'r2_read_len': [metrics_r2['read_len']]
+        })
 
-        command = f'cat {path} | grep "Sequences flagged as poor quality" | cut -f 2'
-        flagged_seqs = subprocess.check_output(command, shell=True, text=True).strip()
-        df['r1_flagged_reads_as_poor_quality'] = [flagged_seqs]
-
-        command = f'cat {path} | grep "Sequence length" | cut -f 2'
-        seq_len = subprocess.check_output(command, shell=True, text=True).strip()
-        df['r1_read_len'] = [seq_len]
-        
-        # R2
-        path = glob.glob(os.path.join(fastqc_dir, f'{sample}*2_fastqc_data.txt'))[0]
-        
-        command = f'cat {path} | grep "Total Sequences" | cut -f 2'
-        total_seqs = subprocess.check_output(command, shell=True, text=True).strip()
-        df['r2_total_reads'] = [total_seqs]
-
-        command = f'cat {path} | grep "Sequences flagged as poor quality" | cut -f 2'
-        flagged_seqs = subprocess.check_output(command, shell=True, text=True).strip()
-        df['r2_flagged_reads_as_poor_quality'] = [flagged_seqs]
-
-        command = f'cat {path} | grep "Sequence length" | cut -f 2'
-        seq_len = subprocess.check_output(command, shell=True, text=True).strip()
-        df['r2_read_len'] = [seq_len]
-        
-        # Write summary metrics to file
-        outfile = os.path.join(outpath, f'{sample}_summary_metrics.tsv')
+        # Save metrics to a TSV file
+        outfile = f'{sample_name}_summary_metrics.tsv'
         df.to_csv(outfile, sep='\t', index=False)
+        print(f"Summary metrics written to {outfile}")
 
 def main():
     parser = argparse.ArgumentParser(description="Summarize FastQC reads for samples.")
     parser.add_argument("sample_names", nargs="+", help="List of sample names")
-    parser.add_argument("fastqc_dir", help="Directory containing unzipped FastQC results")
+    parser.add_argument("fastqc1_data_array", nargs="+", help="List of FastQC data files for R1")
+    parser.add_argument("fastqc2_data_array", nargs="+", help="List of FastQC data files for R2")
 
     args = parser.parse_args()
-    
-    # Example arguments:
-    #sample_names = 2407110180 SG20240710
-    #fastqc_dir = /home/irin_paul/h5/test_h5_0005_nextseq/avrl_h5n1_250bp/fastqc_raw
-    # OR
-    #fastqc_dir = /home/irin_paul/h5/test_h5_0005_nextseq/avrl_h5n1_250bp/fastqc_clean
-
-
-    summarize_reads(args.sample_names, args.fastqc_dir)
+    summarize_reads(args.sample_names, args.fastqc1_data_array, args.fastqc2_data_array)
 
 if __name__ == "__main__":
     main()
