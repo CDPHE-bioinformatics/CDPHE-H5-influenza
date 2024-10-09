@@ -9,7 +9,6 @@ import pandas as pd
 import argparse
 
 def get_fastqc_metrics(fastqc_file):
-    """Extract Total Sequences, Poor Quality Sequences, and Sequence Length from a FastQC data file."""
     metrics = {}
     grep_commands = {
         "Total Sequences": "r_total_reads",
@@ -21,8 +20,7 @@ def get_fastqc_metrics(fastqc_file):
         metrics[metric_name] = subprocess.check_output(command, shell=True, text=True).strip()
     return metrics
 
-def summarize_reads(sample_names, fastqc1_data_array, fastqc2_data_array):
-    """Summarize metrics for each sample from FastQC data files for R1 and R2."""
+def summarize_reads(sample_names, fastqc1_data_array, fastqc2_data_array, fastqc_type):
     for i in range(len(sample_names)):
         sample_name = sample_names[i]
         fastqc1_data = fastqc1_data_array[i]
@@ -46,7 +44,8 @@ def summarize_reads(sample_names, fastqc1_data_array, fastqc2_data_array):
         })
 
         # Save metrics to a TSV file
-        outfile = f'{sample_name}_clean_summary_metrics.tsv'
+
+        outfile = f'{sample_name}_{fastqc_type}_summary_metrics.tsv'
         df.to_csv(outfile, sep='\t', index=False)
         print(f"Summary metrics written to {outfile}")
 
@@ -55,9 +54,10 @@ def main():
     parser.add_argument("sample_names", nargs="+", help="List of sample names")
     parser.add_argument("fastqc1_data_array", nargs="+", help="List of FastQC data files for R1")
     parser.add_argument("fastqc2_data_array", nargs="+", help="List of FastQC data files for R2")
+    parser.add_argument("fastqc_type", help="type of fastqc file, clean/raw")
 
     args = parser.parse_args()
-    summarize_reads(args.sample_names, args.fastqc1_data_array, args.fastqc2_data_array)
+    summarize_reads(args.sample_names, args.fastqc1_data_array, args.fastqc2_data_array, args.fastqc_type)
 
 if __name__ == "__main__":
     main()

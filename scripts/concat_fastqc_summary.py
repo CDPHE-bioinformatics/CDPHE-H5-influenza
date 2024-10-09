@@ -10,7 +10,7 @@ import pandas as pd
 import argparse
 
 def get_sample_name(filename):
-    sample_name = re.sub(r'_clean_summary_metrics.tsv$|_summary_metrics.tsv$', '', filename)
+    sample_name = re.sub(r'_clean_summary_metrics.tsv$|_raw_summary_metrics.tsv$', '', filename)
     return sample_name
 
 def combine_fastqc_summaries(summarized_fastqcs, project_name):
@@ -26,7 +26,7 @@ def combine_fastqc_summaries(summarized_fastqcs, project_name):
             df_filtered['sample_name'] = sample_name
             df_filtered_list.append(df_filtered)
 
-        elif file.endswith('summary_metrics.tsv'):
+        elif file.endswith('_raw_summary_metrics.tsv'):
             df_raw = pd.read_csv(file, sep = '\t')
             df_raw['sample_name'] = sample_name
             df_raw_list.append(df_raw)

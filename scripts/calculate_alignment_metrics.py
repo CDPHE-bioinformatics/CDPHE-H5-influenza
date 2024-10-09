@@ -26,7 +26,7 @@ def calculate_percent_coverage(sample, consensus, total_reference_length, primer
 
     # Generate reference from the consensus path
     consensus_path_split = consensus.split('/')
-    reference = f'{consensus_path_split[-2]}: {consensus_path_split[-1]}' if len(consensus_path_split) >= 2 else consensus_path_split[0]
+    reference = f'{consensus_path_split[-2]}: {consensus_path_split[-1]}' if len(consensus_path_split) ==4 else consensus_path_split[0]
 
     # Create DataFrame for percent coverage results
     df = pd.DataFrame({
