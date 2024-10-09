@@ -78,6 +78,7 @@ workflow h5 {
                 input:
                     primer_samples = primer_samples,
                     primer_outdir = primer_outdir,
+                    project_name = project_name,
                     fastqc_docker = fastqc_docker,
                     seqyclean_docker = seqyclean_docker,
                     python_docker = python_docker,
@@ -96,6 +97,7 @@ workflow h5 {
                 call rt.reference_level_tasks as r_sub {
                     input: 
                         reference = p_ref,
+                        project_name = project_name,
                         reference_outdir = primer_outdir + ref_name + "/",
                         num_samples = num_samples,
                         primer_samples = primer_samples,

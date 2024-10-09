@@ -5,6 +5,7 @@ import "other_tasks.wdl" as ot
 workflow reference_level_tasks {
     input {
         Reference reference
+        String project_name
         String reference_outdir
         Array[Int] num_samples
         Array[Sample] primer_samples
@@ -20,12 +21,13 @@ workflow reference_level_tasks {
 
     scatter (n in num_samples) {
         Sample sample = primer_samples[n]
+        sample_name = sample.name
         File PE1 = cleaned_PE1[n]
         File PE2 = cleaned_PE2[n]
 
         call align_bwa {
             input:
-                sample_name = sample.name,
+                sample_name = sample_name,
                 fastq1 = PE1,
                 fastq2 = PE2,
                 reference_name = reference.name,
@@ -35,7 +37,7 @@ workflow reference_level_tasks {
 
         call trim_primers_ivar {
             input: 
-                sample_name = sample.name,
+                sample_name = sample_name,
                 bam = align_bwa.bam,
                 primer_bed = primer_bed,
                 docker = ivar_docker
@@ -43,42 +45,34 @@ workflow reference_level_tasks {
 
         call generate_consensus_ivar {
             input: 
-                sample_name = sample.name,
+                sample_name = sample_name,
                 trim_sort_bam = trim_primers_ivar.trim_sort_bam,
                 reference_fasta = reference.fasta,
                 docker = ivar_docker
         }   
 
-        call alignment_metrics {
+        call alignment_metrics_samtools {
             input:
-                sample_name = sample.name,
+                sample_name = sample_name,
                 trim_sort_bam = trim_primers_ivar.trim_sort_bam,
                 docker = ivar_docker
         }
 
-        # call calculate_percent_coverage {
-        #     input:
-        #         sample_name = sample.name,
-        #         ref_length = reference.length,
-        #         seq_ref_length = reference.captured_length,
-        #         consensus_fasta = generate_consensus_ivar.consensus_fasta,
-        #         docker = python_docker
-        # }
-
-        # call concat_sample_reference_metrics {
-        #     input: 
-        #         sample_name = sample.name,
-        #         samtools_coverage = alignment_metrics.coverage,
-        #         samtools_stats = alignment_metrics.stats,
-        #         coverage_stats = calculate_percent_coverage.coverage_stats,
-        #         docker = python_docker
-        # }
-
     } 
+
+    call calculate_alignment_metrics {
+        input:
+            sample_names = sample_name,
+            consensus_fastas = generate_consensus_ivar.consensus_fasta,
+            project_name  = project_name,
+            reference_fasta = reference.fasta,
+            primer_bed = primer_bed,
+            docker = h5_scripts_docker
+    }
 
     call ot.multiqc as multiqc_samtools {
         input:
-            files = flatten([trim_primers_ivar.idxstats, alignment_metrics.coverage, alignment_metrics.stats]),
+            files = flatten([trim_primers_ivar.idxstats, alignment_metrics_samtools.coverage, alignment_metrics_samtools.stats]),
             module = "samtools",
             task_name = "alignment",
             cl_config = "extra_fn_clean_exts: [ '_coverage', '_stats']",
@@ -88,7 +82,11 @@ workflow reference_level_tasks {
     # Transfer reference level files
     Array[File] alignment_output = flatten([trim_primers_ivar.trim_sort_bam, trim_primers_ivar.trim_sort_bai])
     Array[File] consensus_output = generate_consensus_ivar.consensus_fasta
-    Array[File] ref_summary_output = flatten([alignment_metrics.coverage, alignment_metrics.stats, [multiqc_samtools.html_report]])
+    Array[File] ref_summary_output = flatten([alignment_metrics_samtools.coverage, 
+                                            alignment_metrics_samtools.stats, 
+                                            [multiqc_samtools.html_report, 
+                                            calculate_alignment_metrics.percent_coverage,
+                                            calculate_alignment_metrics.aln_metrics]])
     
     Array[String] reference_task_dirs = ["alignments", "consensus_sequences", "metrics"]
     Array[Array[File]] reference_task_files = [alignment_output, consensus_output, ref_summary_output]
@@ -109,8 +107,7 @@ workflow reference_level_tasks {
         VersionInfo ivar_version = select_first(align_bwa.ivar_version_info)
         Array[File] alignment_outputs = alignment_output
         Array[File] consensus_outputs = consensus_output
-        Array[File] ref_summary_outputs = ref_summary_output
-
+        Array[File] ref_summary_outputs = ref_summary_output   
     }
 }
 
@@ -233,7 +230,7 @@ task generate_consensus_ivar {
     }
 }
 
-task alignment_metrics {
+task alignment_metrics_samtools {
     input {
         String sample_name
         File trim_sort_bam
@@ -260,21 +257,23 @@ task alignment_metrics {
     }
 }
 
-task calculate_percent_coverage {
+task calculate_alignment_metrics {
     input {
-        Int ref_length
-        Int seq_ref_length
-        String sample_name
-        File consensus_fasta
+        Array[String] sample_names
+        Array[File] consensus_fastas
+        String project_name
+        File reference_fasta
+        File primer_bed
         String docker
     }
 
     command <<<
-        # python stuff
+        python3 scripts/calculate_alignment_metrics.py ~{sample_names} ~{consensus_fastas} ~{project_name} ~{reference_fasta} ~{primer_bed} 
     >>>
 
     output {
-        File coverage_stats = "~{sample_name}_coverage_stats.csv"
+        File percent_coverage = "~{project_name}_percent_coverage.csv"
+        File aln_metrics = "~{project_name}_aln_metrics_summary.csv"
     }
 
     runtime {
@@ -284,26 +283,3 @@ task calculate_percent_coverage {
     }
 }
 
-task concat_sample_reference_metrics {
-    input {
-        String sample_name
-        File samtools_coverage
-        File samtools_stats
-        File coverage_stats
-        String docker
-    }
-
-    command <<<
-        # python stuff
-    >>>
-
-    output {
-        File sample_reference_metrics = "~{sample_name}_reference_metrics.csv"
-    }
-
-    runtime {
-        #cpu: 
-        #memory: 
-        docker: docker
-    }
-}

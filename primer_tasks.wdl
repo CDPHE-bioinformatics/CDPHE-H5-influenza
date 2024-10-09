@@ -6,6 +6,7 @@ workflow primer_level_tasks {
     input {
         Array[Sample] primer_samples
         String primer_outdir
+        String project_name
         String fastqc_docker
         String seqyclean_docker
         String python_docker
@@ -41,7 +42,7 @@ workflow primer_level_tasks {
 
     }
 
-    call sample_qc_file as sample_qc_file_raw {
+    call summarize_fastqc as summarize_fastqc_raw {
         input: 
             sample_names = sample_name,
             fastqc1_data_array = fastqc_raw.fastqc1_data,
@@ -49,13 +50,22 @@ workflow primer_level_tasks {
             docker = h5_scripts_docker
     }
 
-    # call sample_qc_file as sample_qc_file_clean {
-    #     input: 
-    #         sample_name = sample.name,
-    #         fastqc1_data = fastqc_clean.fastqc1_data,
-    #         fastqc2_data = fastqc_clean.fastqc2_data,
-    #         docker = h5_scripts_docker
-    # }
+    call summarize_fastqc as summarize_fastqc_clean {
+        input: 
+            sample_names = sample.name,
+            fastqc1_data_array = fastqc_clean.fastqc1_data,
+            fastqc2_data_array = fastqc_clean.fastqc2_data,
+            docker = h5_scripts_docker
+    }
+
+    call concat_fastqc_summaries {
+        input:
+            sample_names = sample.name,
+            summarized_fastqcs = flatten([summarize_fastqc_raw.summary_metrics, 
+                                            summarize_fastqc_clean.summary_metrics]),
+            project_name = project_name,
+            docker = h5_scripts_docker
+    }
 
     # Call multiqc
     call ot.multiqc as multiqc_fastqc {
@@ -80,7 +90,7 @@ workflow primer_level_tasks {
     Array[File] fastqc_raw_output = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data])
     Array[File] fastqc_clean_output = flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data])
     Array[File] seqyclean_output = flatten([seqyclean.PE1, seqyclean.PE2])
-    Array[File] p_summary_output = [multiqc_fastqc.html_report, multiqc_seqyclean.html_report]
+    Array[File] p_summary_output = [multiqc_fastqc.html_report, multiqc_seqyclean.html_report, concat_fastqc_summaries.fastqc_summary]
 
     Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean", "summary_files"]
     Array[Array[File]] primer_task_files = [fastqc_raw_output, fastqc_clean_output, seqyclean_output, p_summary_output]       
@@ -101,6 +111,7 @@ workflow primer_level_tasks {
         Array[File] cleaned_PE1 = seqyclean.PE1
         Array[File] cleaned_PE2 = seqyclean.PE2
         Array[File] p_summary_outputs = p_summary_output
+        File fastqc_summary = concat_fastqc_summaries.fastqc_summary
         VersionInfo fastqc_version = select_first(fastqc_raw.version_info)
         VersionInfo seqyclean_version = select_first(seqyclean.version_info)
         VersionInfo multiqc_version = multiqc_fastqc.version_info
@@ -142,7 +153,7 @@ task fastqc {
     }
 }
 
-task sample_qc_file {
+task summarize_fastqc {
     input {
         Array[String] sample_names
         Array[File] fastqc1_data_array
@@ -198,19 +209,20 @@ task seqyclean {
     }
 }
 
-task concat_sample_metrics {
+task concat_fastqc_summaries {
     input {
-        String sample_name
-        Array[File] sample_reference_metrics
+        String sample_names
+        Array[File] summarized_fastqcs
+        String project_name
         String docker
     }
 
     command <<<
-        # python stuff
+        python3 scripts/concat_fastqc_summaries.py ~{sample_names} ~{summarized_fastqcs} ~{project_name}
     >>>
 
     output {
-        File sample_metrics = "~{sample_name}_metrics.csv"
+        File fastqc_summary = "~{project_name}_reads_QC_summary.csv"
     }
 
     runtime {
