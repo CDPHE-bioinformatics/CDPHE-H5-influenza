@@ -47,6 +47,7 @@ workflow primer_level_tasks {
             sample_names = sample_name,
             fastqc1_data_array = fastqc_raw.fastqc1_data,
             fastqc2_data_array = fastqc_raw.fastqc2_data,
+            fastqc_type = "raw",
             docker = h5_scripts_docker
     }
 
@@ -55,6 +56,7 @@ workflow primer_level_tasks {
             sample_names = sample.name,
             fastqc1_data_array = fastqc_clean.fastqc1_data,
             fastqc2_data_array = fastqc_clean.fastqc2_data,
+            fastqc_type = "clean",
             docker = h5_scripts_docker
     }
 
@@ -158,11 +160,12 @@ task summarize_fastqc {
         Array[String] sample_names
         Array[File] fastqc1_data_array
         Array[File] fastqc2_data_array
+        String fastqc_type
         String docker
     }
 
     command <<<
-        python3 scripts/summarize_fastqc.py ~{sample_names} ~{fastqc1_data_array} ~{fastqc2_data_array}
+        python3 scripts/summarize_fastqc.py ~{sample_names} ~{fastqc1_data_array} ~{fastqc2_data_array} ~{fastqc_type}
     >>>
 
     output {
