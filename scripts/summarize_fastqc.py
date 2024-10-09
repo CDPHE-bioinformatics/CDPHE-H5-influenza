@@ -46,7 +46,7 @@ def summarize_reads(sample_names, fastqc1_data_array, fastqc2_data_array):
         })
 
         # Save metrics to a TSV file
-        outfile = f'{sample_name}_summary_metrics.tsv'
+        outfile = f'{sample_name}_clean_summary_metrics.tsv'
         df.to_csv(outfile, sep='\t', index=False)
         print(f"Summary metrics written to {outfile}")
 
