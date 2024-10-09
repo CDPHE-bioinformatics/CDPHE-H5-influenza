@@ -58,7 +58,7 @@ workflow primer_level_tasks {
             docker = h5_scripts_docker
     }
 
-    call concat_fastqc_summaries {
+    call concat_fastqc_summary {
         input:
             sample_names = sample.name,
             summarized_fastqcs = flatten([summarize_fastqc_raw.summary_metrics, 
@@ -90,7 +90,7 @@ workflow primer_level_tasks {
     Array[File] fastqc_raw_output = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data])
     Array[File] fastqc_clean_output = flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data])
     Array[File] seqyclean_output = flatten([seqyclean.PE1, seqyclean.PE2])
-    Array[File] p_summary_output = [multiqc_fastqc.html_report, multiqc_seqyclean.html_report, concat_fastqc_summaries.fastqc_summary]
+    Array[File] p_summary_output = [multiqc_fastqc.html_report, multiqc_seqyclean.html_report, concat_fastqc_summary.fastqc_summary]
 
     Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean", "summary_files"]
     Array[Array[File]] primer_task_files = [fastqc_raw_output, fastqc_clean_output, seqyclean_output, p_summary_output]       
@@ -111,7 +111,7 @@ workflow primer_level_tasks {
         Array[File] cleaned_PE1 = seqyclean.PE1
         Array[File] cleaned_PE2 = seqyclean.PE2
         Array[File] p_summary_outputs = p_summary_output
-        File fastqc_summary = concat_fastqc_summaries.fastqc_summary
+        File fastqc_summary = concat_fastqc_summary.fastqc_summary
         VersionInfo fastqc_version = select_first(fastqc_raw.version_info)
         VersionInfo seqyclean_version = select_first(seqyclean.version_info)
         VersionInfo multiqc_version = multiqc_fastqc.version_info
@@ -209,7 +209,7 @@ task seqyclean {
     }
 }
 
-task concat_fastqc_summaries {
+task concat_fastqc_summary {
     input {
         String sample_names
         Array[File] summarized_fastqcs
@@ -218,7 +218,7 @@ task concat_fastqc_summaries {
     }
 
     command <<<
-        python3 scripts/concat_fastqc_summaries.py ~{sample_names} ~{summarized_fastqcs} ~{project_name}
+        python3 scripts/concat_fastqc_summary.py ~{sample_names} ~{summarized_fastqcs} ~{project_name}
     >>>
 
     output {
