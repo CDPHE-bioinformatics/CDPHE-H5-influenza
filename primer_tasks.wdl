@@ -17,6 +17,7 @@ workflow primer_level_tasks {
     }
 
     scatter (sample in primer_samples) {
+        String sample_name = sample.name
         # Call sample level tasks
         call fastqc as fastqc_raw {
             input: 
@@ -43,7 +44,7 @@ workflow primer_level_tasks {
 
     call summarize_fastqc as summarize_fastqc_raw {
         input: 
-            sample_names = seqyclean.sample_name,
+            sample_names = sample_name,
             fastqc1_data_array = fastqc_raw.fastqc1_data,
             fastqc2_data_array = fastqc_raw.fastqc2_data,
             fastqc_type = "raw",
@@ -52,7 +53,7 @@ workflow primer_level_tasks {
 
     call summarize_fastqc as summarize_fastqc_clean {
         input: 
-            sample_names = seqyclean.sample_name,
+            sample_names = sample_name,
             fastqc1_data_array = fastqc_clean.fastqc1_data,
             fastqc2_data_array = fastqc_clean.fastqc2_data,
             fastqc_type = "clean",
@@ -61,7 +62,7 @@ workflow primer_level_tasks {
 
     call concat_fastqc_summary {
         input:
-            sample_names = seqyclean.sample_name,
+            sample_names = sample_name,
             summarized_fastqcs = flatten([summarize_fastqc_raw.summary_metrics, 
                                             summarize_fastqc_clean.summary_metrics]),
             project_name = project_name,
@@ -194,7 +195,6 @@ task seqyclean {
     >>>
 
     output {
-        String sample_name = sample.name
         File PE1 = "~{sample.name}_clean_PE1.fastq.gz"
         File PE2 = "~{sample.name}_clean_PE2.fastq.gz"
         File summary_stats = "~{sample.name}_clean_SummaryStatistics.tsv"
@@ -214,7 +214,7 @@ task seqyclean {
 
 task concat_fastqc_summary {
     input {
-        String sample_names
+        Array[String] sample_names
         Array[File] summarized_fastqcs
         String project_name
         String docker
