@@ -21,7 +21,7 @@ workflow reference_level_tasks {
 
     scatter (n in num_samples) {
         Sample sample = primer_samples[n]
-        sample_name = sample.name
+        String sample_name = sample.name
         File PE1 = cleaned_PE1[n]
         File PE2 = cleaned_PE2[n]
 
