@@ -53,7 +53,7 @@ workflow primer_level_tasks {
 
     call summarize_fastqc as summarize_fastqc_clean {
         input: 
-            sample_names = sample.name,
+            sample_names = sample_name,
             fastqc1_data_array = fastqc_clean.fastqc1_data,
             fastqc2_data_array = fastqc_clean.fastqc2_data,
             fastqc_type = "clean",
@@ -62,7 +62,7 @@ workflow primer_level_tasks {
 
     call concat_fastqc_summary {
         input:
-            sample_names = sample.name,
+            sample_names = sample_name,
             summarized_fastqcs = flatten([summarize_fastqc_raw.summary_metrics, 
                                             summarize_fastqc_clean.summary_metrics]),
             project_name = project_name,
