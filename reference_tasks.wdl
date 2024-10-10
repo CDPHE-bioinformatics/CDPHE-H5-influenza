@@ -268,7 +268,7 @@ task calculate_alignment_metrics {
     }
 
     command <<<
-        python3 scripts/calculate_alignment_metrics.py ~{sample_names} ~{consensus_fastas} ~{project_name} ~{reference_fasta} ~{primer_bed} 
+        python3 calculate_alignment_metrics.py ~{sep(' ', sample_names)} ~{sep(' ', consensus_fastas)} ~{project_name} ~{reference_fasta} ~{primer_bed} 
     >>>
 
     output {
