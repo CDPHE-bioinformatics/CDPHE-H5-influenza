@@ -165,7 +165,10 @@ task summarize_fastqc {
     }
 
     command <<<
-        summarize_fastqc.py ~{sep(' ', sample_names)} ~{sep(' ', fastqc1_data_array)} ~{sep(' ',  fastqc2_data_array)} ~{fastqc_type}
+        summarize_fastqc.py --sample_names ~{sep(' ', sample_names)} \
+            --fastqc1_data_array ~{sep(' ', fastqc1_data_array)} \
+            --fastqc2_data_array ~{sep(' ',  fastqc2_data_array)} \
+            --fastqc_type ~{fastqc_type}
     >>>
 
     output {
@@ -221,7 +224,8 @@ task concat_fastqc_summary {
     }
 
     command <<<
-        concat_fastqc_summary.py ~{sep(' ',  sample_names)} ~{sep(' ',  summarized_fastqcs)} ~{project_name}
+        concat_fastqc_summary.py --summarized_fastqcs ~{sep(' ',  summarized_fastqcs)} \
+            --project_name ~{project_name}
     >>>
 
     output {

@@ -51,10 +51,10 @@ def summarize_reads(sample_names, fastqc1_data_array, fastqc2_data_array, fastqc
 
 def main():
     parser = argparse.ArgumentParser(description="Summarize FastQC reads for samples.")
-    parser.add_argument("sample_names", nargs="+", help="List of sample names")
-    parser.add_argument("fastqc1_data_array", nargs="+", help="List of FastQC data files for R1")
-    parser.add_argument("fastqc2_data_array", nargs="+", help="List of FastQC data files for R2")
-    parser.add_argument("fastqc_type", help="type of fastqc file, clean/raw")
+    parser.add_argument("--sample_names", nargs="+", help="List of sample names")
+    parser.add_argument("--fastqc1_data_array", nargs="+", help="List of FastQC data files for R1")
+    parser.add_argument("--fastqc2_data_array", nargs="+", help="List of FastQC data files for R2")
+    parser.add_argument("--fastqc_type", help="type of fastqc file, clean/raw")
 
     args = parser.parse_args()
     summarize_reads(args.sample_names, args.fastqc1_data_array, args.fastqc2_data_array, args.fastqc_type)

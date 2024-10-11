@@ -268,7 +268,11 @@ task calculate_alignment_metrics {
     }
 
     command <<<
-        calculate_alignment_metrics.py ~{sep(' ', sample_names)} ~{sep(' ', consensus_fastas)} ~{project_name} ~{reference_fasta} ~{primer_bed} 
+        calculate_alignment_metrics.py --sample_names ~{sep(' ', sample_names)} \
+                --consensus_fastas ~{sep(' ', consensus_fastas)} \
+                --project_name ~{project_name} \
+                --reference_fasta ~{reference_fasta} \
+                --primer_bed ~{primer_bed} 
     >>>
 
     output {

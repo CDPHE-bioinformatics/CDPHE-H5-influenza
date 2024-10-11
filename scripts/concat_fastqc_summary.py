@@ -76,8 +76,8 @@ def combine_fastqc_summaries(summarized_fastqcs, project_name):
 def main():
     # argument parser
     parser = argparse.ArgumentParser(description="Combine FastQC summary for raw and filtered data.")
-    parser.add_argument("summarized_fastqcs", nargs='+', help="Array of Fastqc summary files")
-    parser.add_argument("project_name", help="Name of the project")
+    parser.add_argument("--summarized_fastqcs", nargs='+', help="Array of Fastqc summary files")
+    parser.add_argument("--project_name", help="Name of the project")
 
     args = parser.parse_args()
 
