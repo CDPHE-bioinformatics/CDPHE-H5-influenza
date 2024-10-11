@@ -120,11 +120,11 @@ def gather_coverage_summaries(args):
 
 def main():
     parser = argparse.ArgumentParser(description='Calculate alignment metrics and percent coverage.')
-    parser.add_argument('sample_names', nargs='+', help='List of sample names')
-    parser.add_argument('consensus_fastas', nargs='+', help='List of consensus FASTA files')
-    parser.add_argument('project_name', help='Name of the project')
-    parser.add_argument('reference_fasta', help='reference FASTA file')
-    parser.add_argument('primer_bed', help='BED file with primer information')
+    parser.add_argument('--sample_names', nargs='+', help='List of sample names')
+    parser.add_argument('--consensus_fastas', nargs='+', help='List of consensus FASTA files')
+    parser.add_argument('--project_name', help='Name of the project')
+    parser.add_argument('--reference_fasta', help='reference FASTA file')
+    parser.add_argument('--primer_bed', help='BED file with primer information')
 
     args = parser.parse_args()
 
