@@ -113,7 +113,7 @@ workflow primer_level_tasks {
         Array[File] cleaned_PE1 = seqyclean.PE1
         Array[File] cleaned_PE2 = seqyclean.PE2
         Array[File] p_summary_outputs = p_summary_output
-        Array[File] fastqc_clean_summaries = summarize_fastqc_clean.summary_metrics
+        Array[File] fastqc_clean_summary_metrics = summarize_fastqc_clean.summary_metrics
         File fastqc_summary = concat_fastqc_summary.fastqc_summary
         VersionInfo fastqc_version = select_first(fastqc_raw.version_info)
         VersionInfo seqyclean_version = select_first(seqyclean.version_info)

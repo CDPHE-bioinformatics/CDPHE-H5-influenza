@@ -60,14 +60,12 @@ workflow declare_structs {
 
     PrimerScheme human_h5_200 = PrimerScheme {
         name: "human_h5_200",
-        references:   [vietnam_1203_2024_h5n1_ha_v2, 
-                        bovine_texas_029328_01_UtoT_ha],
+        references:   [bovine_texas_029328_01_UtoT_ha],
         bed: human_h5_200_bed
     }
     PrimerScheme human_h5_250 = PrimerScheme {
         name: "human_h5_250",
-        references:   [vietnam_1203_2024_h5n1_ha_v2, 
-                            bovine_texas_029328_01_UtoT_ha],
+        references:   [bovine_texas_029328_01_UtoT_ha],
         bed: human_h5_250_bed
     }
     PrimerScheme houston = PrimerScheme {
