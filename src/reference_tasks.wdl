@@ -11,7 +11,7 @@ workflow reference_level_tasks {
         Array[Sample] primer_samples
         Array[File] cleaned_PE1
         Array[File] cleaned_PE2
-        Array[File] fastqc_clean_summaries
+        Array[File] fastqc_clean_summary_metrics
         File primer_bed
         String ivar_docker
         String python_docker
