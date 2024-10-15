@@ -23,7 +23,7 @@ task workflow_metadata {
 
     output {
         String analysis_date = read_string("TODAY")
-        String version = "v0-0-0-beta" 
+        String version = "v0-0-0-epsilon" 
     }
 
     runtime {
