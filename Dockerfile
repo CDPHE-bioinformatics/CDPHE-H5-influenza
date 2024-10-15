@@ -6,6 +6,8 @@ WORKDIR /usr/src/app
 
 ENV PATH="$PATH:/usr/src/app"
 
+ENV DOCKER_VERSION='v0.0.0-epsilon'
+
 COPY src/scripts/* ./
 
 COPY requirements.txt ./
