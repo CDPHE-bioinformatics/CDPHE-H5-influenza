@@ -270,7 +270,6 @@ task calculate_alignment_metrics {
         Array[File] fastqc_clean_summary_metrics
         String project_name
         File reference_fasta
-        String reference_name
         File primer_bed
         String docker
     }
