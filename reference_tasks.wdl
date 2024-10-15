@@ -11,6 +11,7 @@ workflow reference_level_tasks {
         Array[Sample] primer_samples
         Array[File] cleaned_PE1
         Array[File] cleaned_PE2
+        Array[File] fastqc_clean_summaries
         File primer_bed
         String ivar_docker
         String python_docker
@@ -64,6 +65,9 @@ workflow reference_level_tasks {
         input:
             sample_names = sample_name,
             consensus_fastas = generate_consensus_ivar.consensus_fasta,
+            samtools_coverages = alignment_metrics_samtools.coverage,
+            samtools_stats = alignment_metrics_samtools.stats,
+            fastqc_clean_summary_metrics = fastqc_clean_summary_metrics,
             project_name  = project_name,
             reference_fasta = reference.fasta,
             primer_bed = primer_bed,
@@ -261,8 +265,12 @@ task calculate_alignment_metrics {
     input {
         Array[String] sample_names
         Array[File] consensus_fastas
+        Array[File] samtools_coverages
+        Array[File] samtools_stats
+        Array[File] fastqc_clean_summary_metrics
         String project_name
         File reference_fasta
+        String reference_name
         File primer_bed
         String docker
     }
@@ -270,6 +278,9 @@ task calculate_alignment_metrics {
     command <<<
         calculate_alignment_metrics.py --sample_names ~{sep(' ', sample_names)} \
                 --consensus_fastas ~{sep(' ', consensus_fastas)} \
+                --samtools_coverages ~{sep(' ', samtools_coverages)} \
+                --samtools_stats ~{sep(' ', samtools_stats)} \
+                --fastqc_clean_summary_metrics ~{sep(' ', fastqc_clean_summary_metrics)} \
                 --project_name ~{project_name} \
                 --reference_fasta ~{reference_fasta} \
                 --primer_bed ~{primer_bed} 

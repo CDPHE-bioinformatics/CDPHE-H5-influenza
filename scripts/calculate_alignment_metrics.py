@@ -109,10 +109,11 @@ def gather_percent_coverage(args, reference_lengths):
 # Function to gather coverage summaries for all samples
 def gather_coverage_summaries(args):
     coverage_summary_dfs = []
-    for sample in args.sample_names:
-        bam_coverage_file = f'{sample}_coverage.txt'
-        bam_stats_file = f'{sample}_stats.txt'
-        fastqc_metrics_file = f'{sample}_clean_summary_metrics.tsv'
+    for i in range(len(args.sample_names)):
+        sample = args.sample_names[i]
+        bam_coverage_file = args.samtools_coverages[i]
+        bam_stats_file = args.samtools_stats[i]
+        fastqc_metrics_file = args.fastqc_clean_summary_metrics[i]
         
         coverage_summary_df = summarize_coverage(sample, bam_coverage_file, bam_stats_file, fastqc_metrics_file)
         coverage_summary_dfs.append(coverage_summary_df)
@@ -122,6 +123,9 @@ def main():
     parser = argparse.ArgumentParser(description='Calculate alignment metrics and percent coverage.')
     parser.add_argument('--sample_names', nargs='+', help='List of sample names')
     parser.add_argument('--consensus_fastas', nargs='+', help='List of consensus FASTA files')
+    parser.add_argument('--samtools_coverages', nargs='+', help='List of samtools coverage.txt files')
+    parser.add_argument('--samtools_stats', nargs='+', help='List of samtools stats.txt files')
+    parser.add_argument('--fastqc_clean_summary_metrics', nargs='+', help='List of fastqc_clean summary metrics files')
     parser.add_argument('--project_name', help='Name of the project')
     parser.add_argument('--reference_fasta', help='reference FASTA file')
     parser.add_argument('--primer_bed', help='BED file with primer information')

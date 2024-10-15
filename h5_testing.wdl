@@ -103,6 +103,7 @@ workflow h5 {
                         primer_samples = primer_samples,
                         cleaned_PE1 = p_sub.cleaned_PE1,
                         cleaned_PE2 = p_sub.cleaned_PE2,
+                        fastqc_clean_summaries = p_sub.fastqc_clean_summaries,
                         primer_bed = ps.bed,
                         ivar_docker = ivar_docker,
                         python_docker = python_docker,
