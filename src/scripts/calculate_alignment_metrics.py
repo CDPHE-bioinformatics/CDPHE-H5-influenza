@@ -97,13 +97,13 @@ def calculate_reference_lengths(reference_sequence_path, bed_df):
     return total_length, primer_insert_length
 
 # Function to gather percent coverage dataframes for all samples and references
-def gather_percent_coverage(args, reference_lengths):
+def gather_percent_coverage(args, total_reference_length, primer_insert_length):
     percent_coverage_dfs = []
-    for sample in args.sample_names:
-        for i, consensus in enumerate(args.consensus_fastas):
-            total_length, primer_insert_length = reference_lengths[i]
-            percent_coverage_df = calculate_percent_coverage(sample, consensus, total_length, primer_insert_length)
-            percent_coverage_dfs.append(percent_coverage_df)
+    for i in range(len(args.sample_names)):
+        sample = args.sample_names[i]
+        consensus = args.consensus_fastas[i]
+        percent_coverage_df = calculate_percent_coverage(sample, consensus, total_reference_length, primer_insert_length)
+        percent_coverage_dfs.append(percent_coverage_df)
     return pd.concat(percent_coverage_dfs).reset_index(drop=True)
 
 # Function to gather coverage summaries for all samples
@@ -136,10 +136,10 @@ def main():
     bed_df = pd.read_csv(args.primer_bed, sep='\t', header=None)
 
     # Load reference lengths using the BED file and reference sequences
-    reference_lengths = calculate_reference_lengths(args.reference_fasta, bed_df)
+    total_reference_length, primer_insert_length = calculate_reference_lengths(args.reference_fasta, bed_df)
 
     # Calculate and save percent coverage
-    concat_percent_coverage_df = gather_percent_coverage(args, [reference_lengths])
+    concat_percent_coverage_df = gather_percent_coverage(args, total_reference_length, primer_insert_length)
     concat_percent_coverage_outfile = f'{args.project_name}_percent_coverage.csv'
     concat_percent_coverage_df.to_csv(concat_percent_coverage_outfile, index=False)
 
