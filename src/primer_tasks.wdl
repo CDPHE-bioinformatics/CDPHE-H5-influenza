@@ -165,6 +165,10 @@ task summarize_fastqc {
         String docker
     }
 
+    meta {
+        volatile: true
+    }
+    
     command <<<
         summarize_fastqc.py --sample_names ~{sep(' ', sample_names)} \
             --fastqc1_data_array ~{sep(' ', fastqc1_data_array)} \
@@ -222,6 +226,10 @@ task concat_fastqc_summary {
         Array[File] summarized_fastqcs
         String project_name
         String docker
+    }
+
+    meta {
+        volatile: true
     }
 
     command <<<

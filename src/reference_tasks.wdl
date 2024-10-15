@@ -274,6 +274,10 @@ task calculate_alignment_metrics {
         String docker
     }
 
+    meta {
+        volatile: true
+    }
+
     command <<<
         calculate_alignment_metrics.py --sample_names ~{sep(' ', sample_names)} \
                 --consensus_fastas ~{sep(' ', consensus_fastas)} \
