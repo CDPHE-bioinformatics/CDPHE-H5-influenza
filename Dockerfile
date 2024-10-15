@@ -6,7 +6,7 @@ WORKDIR /usr/src/app
 
 ENV PATH="$PATH:/usr/src/app"
 
-COPY scripts/* ./
+COPY src/scripts/* ./
 
 COPY requirements.txt ./
 
