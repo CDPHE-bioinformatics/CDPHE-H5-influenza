@@ -90,28 +90,26 @@ workflow h5_assembly_analysis {
             Array[File] seqyclean_output = flatten([p_sub.cleaned_PE1, p_sub.cleaned_PE2])
 
             # Call reference level tasks (subworkflow)
-            Array[Int] num_samples = range(length(primer_samples))            
-            scatter (p_ref in ps.references) {
-
-                String ref_name = p_ref.name
-                call rt.reference_level_tasks as r_sub {
-                    input: 
-                        reference = p_ref,
-                        project_name = project_name,
-                        reference_outdir = primer_outdir + ref_name + "/",
-                        num_samples = num_samples,
-                        primer_samples = primer_samples,
-                        cleaned_PE1 = p_sub.cleaned_PE1,
-                        cleaned_PE2 = p_sub.cleaned_PE2,
-                        fastqc_clean_summary_metrics = p_sub.fastqc_clean_summary_metrics,
-                        primer_bed = ps.bed,
-                        ivar_docker = ivar_docker,
-                        python_docker = python_docker,
-                        multiqc_docker = multiqc_docker,
-                        utility_docker = utility_docker,
-                        h5_docker = h5_docker
-                }   
-            }
+            Array[Int] num_samples = range(length(primer_samples)) 
+            String ref_name = ps.reference.name           
+            
+            call rt.reference_level_tasks as r_sub {
+                input: 
+                    reference = p_ref,
+                    project_name = project_name,
+                    reference_outdir = primer_outdir + ref_name + "/",
+                    num_samples = num_samples,
+                    primer_samples = primer_samples,
+                    cleaned_PE1 = p_sub.cleaned_PE1,
+                    cleaned_PE2 = p_sub.cleaned_PE2,
+                    fastqc_clean_summary_metrics = p_sub.fastqc_clean_summary_metrics,
+                    primer_bed = ps.bed,
+                    ivar_docker = ivar_docker,
+                    python_docker = python_docker,
+                    multiqc_docker = multiqc_docker,
+                    utility_docker = utility_docker,
+                    h5_docker = h5_docker
+            }   
         }
     }
 
@@ -119,9 +117,9 @@ workflow h5_assembly_analysis {
     VersionInfo fastqc_version = select_first(p_sub.fastqc_version)
     VersionInfo seqyclean_version = select_first(p_sub.seqyclean_version)
     VersionInfo multiqc_version = select_first(p_sub.multiqc_version)
-    VersionInfo samtools_version = select_first(select_first(r_sub.samtools_version))
-    VersionInfo bwa_version = select_first(select_first(r_sub.bwa_version))
-    VersionInfo ivar_version = select_first(select_first(r_sub.ivar_version))
+    VersionInfo samtools_version = select_first(r_sub.samtools_version)
+    VersionInfo bwa_version = select_first(r_sub.bwa_version)
+    VersionInfo ivar_version = select_first(r_sub.ivar_version)
     Array[VersionInfo] version_array = [fastqc_version, seqyclean_version, multiqc_version, 
                                 samtools_version, bwa_version, ivar_version]
 
@@ -136,21 +134,20 @@ workflow h5_assembly_analysis {
     call ot.transfer as transfer_vc {
         input:
             out_dir = project_outdir,
-            task_dir = 'summary_files',
+            task_dir = 'summary_results',
             task_files = [version_cap.output_file],
             docker = utility_docker
     }
 
     output { 
         Array[String] primers_used = select_all(p_name)
-        Array[Array[File]] p_fastqc_raw_outputs = select_all(p_sub.fastqc_raw_outputs)
-        Array[Array[File]] p_fastqc_clean_outputs = select_all(p_sub.fastqc_clean_outputs)
-        Array[Array[File]] p_seqyclean_outputs = select_all(seqyclean_output)
-        Array[Array[File]] p_summary_outputs = select_all(p_sub.p_summary_outputs)
-        Array[Array[String]] p_refs_used = select_all(select_all(ref_name))
-        Array[Array[Array[File]]] p_refs_alignment_outputs = select_all(r_sub.alignment_outputs)
-        Array[Array[Array[File]]] p_refs_consensus_outputs = select_all(r_sub.consensus_outputs)
-        Array[Array[Array[File]]] p_refs_summary_outputs = select_all(r_sub.ref_summary_outputs)
+        Array[Array[File]] primers_fastqc_raw_outputs = select_all(p_sub.fastqc_raw_outputs)
+        Array[Array[File]] primers_fastqc_clean_outputs = select_all(p_sub.fastqc_clean_outputs)
+        Array[Array[File]] primers_seqyclean_outputs = select_all(seqyclean_output)
+        Array[Array[File]] primers_summary_outputs = select_all(p_sub.p_summary_outputs)
+        Array[Array[File]] primers_alignment_outputs = select_all(r_sub.alignment_outputs)
+        Array[Array[File]] primers_consensus_outputs = select_all(r_sub.consensus_outputs)
+        Array[Array[File]] primers_summary_outputs = select_all(r_sub.ref_summary_outputs)
         Array[VersionInfo] version_capture = version_array
     }    
 }
