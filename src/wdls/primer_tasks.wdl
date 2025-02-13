@@ -12,7 +12,7 @@ workflow primer_level_tasks {
         String python_docker
         String multiqc_docker
         String utility_docker
-        String h5_scripts_docker
+        String h5_docker
         File contaminants_fasta
     }
 
@@ -48,7 +48,7 @@ workflow primer_level_tasks {
             fastqc1_data_array = fastqc_raw.fastqc1_data,
             fastqc2_data_array = fastqc_raw.fastqc2_data,
             fastqc_type = "raw",
-            docker = h5_scripts_docker
+            docker = h5_docker
     }
 
     call summarize_fastqc as summarize_fastqc_clean {
@@ -57,7 +57,7 @@ workflow primer_level_tasks {
             fastqc1_data_array = fastqc_clean.fastqc1_data,
             fastqc2_data_array = fastqc_clean.fastqc2_data,
             fastqc_type = "clean",
-            docker = h5_scripts_docker
+            docker = h5_docker
     }
 
     call concat_fastqc_summary {
@@ -66,7 +66,7 @@ workflow primer_level_tasks {
             summarized_fastqcs = flatten([summarize_fastqc_raw.summary_metrics, 
                                             summarize_fastqc_clean.summary_metrics]),
             project_name = project_name,
-            docker = h5_scripts_docker
+            docker = h5_docker
     }
 
     # Call multiqc
