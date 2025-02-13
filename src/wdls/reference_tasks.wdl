@@ -92,7 +92,7 @@ workflow reference_level_tasks {
                                             calculate_alignment_metrics.percent_coverage,
                                             calculate_alignment_metrics.aln_metrics]])
     
-    Array[String] reference_task_dirs = ["alignments", "consensus_sequences", "metrics"]
+    Array[String] reference_task_dirs = ["alignments", "assemblies", "metrics"]
     Array[Array[File]] reference_task_files = [alignment_output, consensus_output, ref_summary_output]
 
     scatter (dir_files in zip(reference_task_dirs, reference_task_files)) {       

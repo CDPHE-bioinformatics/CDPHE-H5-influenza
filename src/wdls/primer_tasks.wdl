@@ -94,7 +94,7 @@ workflow primer_level_tasks {
     Array[File] seqyclean_output = flatten([seqyclean.PE1, seqyclean.PE2])
     Array[File] p_summary_output = [multiqc_fastqc.html_report, multiqc_seqyclean.html_report, concat_fastqc_summary.fastqc_summary]
 
-    Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean", "summary_files"]
+    Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean", "summary_results"]
     Array[Array[File]] primer_task_files = [fastqc_raw_output, fastqc_clean_output, seqyclean_output, p_summary_output]       
 
     scatter (dir_files in zip(primer_task_dirs, primer_task_files)) {       
