@@ -30,7 +30,7 @@ workflow declare_structs {
         String h5_docker
     }
 
-    call download_references as refs{
+    call download_references as refs {
         input:
             docker = h5_docker
     }
@@ -39,33 +39,38 @@ workflow declare_structs {
         name: "A_Bovine_Texas_24-029328-01_2024_H5N1_multi",
         fasta: refs.A_Bovine_Texas_24-029328-01_2024_H5N1_multi_fasta
     }
+    Reference A_Texas_37_2024_H5N1_HA-H5 = Reference {
+        name: "A_Texas_37_2024_H5N1_HA-H5_fasta",
+        fasta: refs.A_Texas_37_2024_H5N1_HA-H5_fasta
+    }
     Reference houston_fluA_multi = Reference {
-        name: "houston_fluA_multi",
+        name: "houston_fluA_multi_fasta",
         fasta: refs.houston_fluA_multi_fasta
+    } 
+    PrimerScheme AVRL_H5N1_250bp = PrimerScheme {
+        name: "AVRL_H5N1_250bp",
+        reference: A_Bovine_Texas_24-029328-01_2024_H5N1_multi,
+        bed: refs.AVRL_H5N1_250bp_bed
+    }
+    PrimerScheme houston = PrimerScheme {
+        name: "houston",
+        reference:  houston_fluA_multi,
+        bed: refs.houston_bed
     }
     PrimerScheme human_h5_200 = PrimerScheme {
         name: "human_h5_200",
-        references:   [A_Texas_37_2024_H5N1_HA-H5],
+        reference:   A_Texas_37_2024_H5N1_HA-H5,
         bed: refs.human_h5_200_bed
     }
     PrimerScheme human_h5_250 = PrimerScheme {
         name: "human_h5_250",
-        references:   [A_Texas_37_2024_H5N1_HA-H5],
+        reference:   A_Texas_37_2024_H5N1_HA-H5,
         bed: refs.human_h5_250_bed
     }
-    PrimerScheme houston = PrimerScheme {
-        name: "houston",
-        references:  [H1N1-2024-01-20-H5N1-2022-05-25-NA-consensus],
-        bed: refs.houston_bed
-    }
-    PrimerScheme AVRL_H5N1_250bp = PrimerScheme {
-        name: "AVRL_H5N1_250bp",
-        references: [A_Bovine_Texas_24-029328-01_2024_H5N1_multi],
-        bed: refs.AVRL_H5N1_250bp_bed
-    }
+
 
     output {
-        Array[PrimerScheme] primer_schemes = [human_h5_200, human_h5_250, houston, AVRL_H5N1_250bp] 
+        Array[PrimerScheme] primer_schemes = [AVRL_H5N1_250bp, houston, human_h5_200, human_h5_250] 
         Array[Reference] references = [A_Texas_37_2024_H5N1_HA-H5, 
                                         A_Bovine_Texas_24-029328-01_2024_H5N1_multi,
                                         houston_fluA_multi]
@@ -78,13 +83,13 @@ task download_references {
     }
 
     output {
-        File A_Texas_37_2024_H5N1_HA-H5_fasta = "references/A_Texas_37_2024_H5N1_HA-H5.fasta"
         File A_Bovine_Texas_24-029328-01_2024_H5N1_multi_fasta = "references/A_Bovine_Texas_24-029328-01_2024_H5N1_multi.fasta"
+        File A_Texas_37_2024_H5N1_HA-H5_fasta = "references/A_Texas_37_2024_H5N1_HA-H5.fasta"
         File houston_fluA_multi_fasta = "references/houston_fluA_multi.fasta"
+        File houston_bed = "references/houston_fluA_primer.bed"
         File human_h5_200_bed = "references/human_h5_200bp_primer.bed"
         File human_h5_250_bed = "references/human_h5_250bp_primer.bed"
-        File houston_bed = "references/houston_fluA_primer.bed"
-        File AVRL_H5N1_250bp_bed = "references/AVRL_H5N1_250bpAmpWGS_primer_v2"
+        File AVRL_H5N1_250bp_bed = "references/AVRL_H5N1_250bpAmpWGS_primer_v2.bed"
     }
 
     runtime {
