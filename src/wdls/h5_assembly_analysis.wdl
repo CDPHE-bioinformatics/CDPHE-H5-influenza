@@ -1,4 +1,4 @@
-version development
+version 1.0
 
 import "structs.wdl" as initializations
 import "version_capture_tasks.wdl" as vc

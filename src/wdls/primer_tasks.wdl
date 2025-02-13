@@ -1,4 +1,4 @@
-version development
+version 1.0
 
 import "other_tasks.wdl" as ot
 

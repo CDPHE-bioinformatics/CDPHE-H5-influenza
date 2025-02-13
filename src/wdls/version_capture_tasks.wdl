@@ -1,4 +1,4 @@
-version development
+version 1.0
 
 import "h5_structs.wdl"
 
@@ -23,7 +23,7 @@ task workflow_metadata {
 
     output {
         String analysis_date = read_string("TODAY")
-        String version = "v0-0-0-epsilon" 
+        String version = "v0_1_0-alpha" 
     }
 
     runtime {
@@ -38,7 +38,7 @@ task capture_versions {
 
     input {
         Array[VersionInfo] version_array
-        String workflow_name = 'h5_testing'
+        String workflow_name = 'h5_assembly_analysis'
         String workflow_version
         String project_name
         String analysis_date

@@ -1,4 +1,4 @@
-version development
+version 1.0
 
 struct Sample {
     String name
@@ -35,34 +35,34 @@ workflow declare_structs {
             docker = h5_docker
     }
 
-    Reference A_Bovine_Texas_24-029328-01_2024_H5N1_multi = Reference {
+    Reference A_Bovine_Texas_24-029328-01_2024_H5N1_multi = object {
         name: "A_Bovine_Texas_24-029328-01_2024_H5N1_multi",
         fasta: refs.A_Bovine_Texas_24-029328-01_2024_H5N1_multi_fasta
     }
-    Reference A_Texas_37_2024_H5N1_HA-H5 = Reference {
+    Reference A_Texas_37_2024_H5N1_HA-H5 = object {
         name: "A_Texas_37_2024_H5N1_HA-H5_fasta",
         fasta: refs.A_Texas_37_2024_H5N1_HA-H5_fasta
     }
-    Reference houston_fluA_multi = Reference {
+    Reference houston_fluA_multi = object {
         name: "houston_fluA_multi_fasta",
         fasta: refs.houston_fluA_multi_fasta
     } 
-    PrimerScheme AVRL_H5N1_250bp = PrimerScheme {
+    PrimerScheme AVRL_H5N1_250bp = object {
         name: "AVRL_H5N1_250bp",
         reference: A_Bovine_Texas_24-029328-01_2024_H5N1_multi,
         bed: refs.AVRL_H5N1_250bp_bed
     }
-    PrimerScheme houston = PrimerScheme {
+    PrimerScheme houston = object {
         name: "houston",
         reference:  houston_fluA_multi,
         bed: refs.houston_bed
     }
-    PrimerScheme human_h5_200 = PrimerScheme {
+    PrimerScheme human_h5_200 = object {
         name: "human_h5_200",
         reference:   A_Texas_37_2024_H5N1_HA-H5,
         bed: refs.human_h5_200_bed
     }
-    PrimerScheme human_h5_250 = PrimerScheme {
+    PrimerScheme human_h5_250 = object {
         name: "human_h5_250",
         reference:   A_Texas_37_2024_H5N1_HA-H5,
         bed: refs.human_h5_250_bed
