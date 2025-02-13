@@ -170,9 +170,9 @@ task summarize_fastqc {
     }
     
     command <<<
-        summarize_fastqc.py --sample_names ~{sep(' ', sample_names)} \
-            --fastqc1_data_array ~{sep(' ', fastqc1_data_array)} \
-            --fastqc2_data_array ~{sep(' ',  fastqc2_data_array)} \
+        summarize_fastqc.py --sample_names ~{sep=' ', sample_names} \
+            --fastqc1_data_array ~{sep=' ', fastqc1_data_array} \
+            --fastqc2_data_array ~{sep=' ',  fastqc2_data_array} \
             --fastqc_type ~{fastqc_type}
     >>>
 
