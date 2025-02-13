@@ -8,10 +8,12 @@ ENV PATH="$PATH:/usr/src/app"
 
 ENV DOCKER_VERSION='v0.0.0-epsilon'
 
-COPY src/scripts/* ./
+COPY src/scripts/* ./scripts
+
+COPY references/* ./references
 
 COPY requirements.txt ./
 
 RUN pip3 install -r requirements.txt
 
-CMD ["python3", "./test.py"]
+CMD ["python3", "./scripts/test.py"]
