@@ -28,7 +28,7 @@ workflow h5_assembly_analysis {
     String multiqc_docker = 'multiqc/multiqc:v1.24'
     String jammy_docker = 'ubuntu:jammy-20240627.1'
     String utility_docker = 'theiagen/utility:1.0'
-    String h5_docker = 'ariannaesmith/h5_python_scripts:latest'
+    String h5_docker = 'ariannaesmith/cdphe_h5_influenza:latest'
 
     Array[Int] indexes = range(length(samples))
 
