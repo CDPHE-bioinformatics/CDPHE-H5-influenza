@@ -68,7 +68,7 @@ task download_references {
     }
 
     command <<<
-        ls
+        echo $PWD
         echo "Outputting references..."
     >>>
 
