@@ -4,7 +4,7 @@ LABEL maintainer "Arianna Smith <arianna.smith@state.co.us>"
 
 WORKDIR /usr/src/app
 
-ENV PATH="$PATH:/usr/src/app"
+ENV PATH="$PATH:/usr/src/app/scripts:/usr/src/app/references"
 
 ENV DOCKER_VERSION='v0.1.0-alpha'
 
