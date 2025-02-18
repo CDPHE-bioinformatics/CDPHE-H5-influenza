@@ -68,8 +68,10 @@ task download_references {
     }
 
     command <<<
-        echo "$(ls script)"
-        echo "$(ls lost+found)"
+        cd script
+        echo "$(ls)"
+        cd ../lost+found
+        echo "$(ls)"
         echo "Outputting references..."
     >>>
 
