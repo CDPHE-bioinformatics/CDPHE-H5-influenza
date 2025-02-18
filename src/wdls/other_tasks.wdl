@@ -1,6 +1,6 @@
 version 1.0
 
-import "h5_structs.wdl"
+import "structs.wdl"
 
 task transfer {
     input {
@@ -30,7 +30,7 @@ task multiqc {
         String docker
     }
 
-    String? task_prefix = if defined(task_name) then "~{module}_~{task_name}" else None
+    String? task_prefix = if defined(task_name) then "~{module}_~{task_name}" else ""
     String html_fn = "~{select_first([task_prefix, module])}_multiqc_report.html"
     String base_cl_config = '--cl-config "show_analysis_paths: False'
 
@@ -43,10 +43,10 @@ task multiqc {
 
     output {
         File html_report = html_fn
-        VersionInfo version_info = VersionInfo {
-            software: "multiqc",
-            docker: docker,
-            version: read_string('VERSION')
+        VersionInfo version_info = {
+            "software": "multiqc",
+            "docker": docker,
+            "version": read_string('VERSION')
         }
     }
 

@@ -4,7 +4,8 @@ import "other_tasks.wdl" as ot
 
 workflow reference_level_tasks {
     input {
-        Reference reference
+        String reference_name
+        File reference_fasta
         String project_name
         String reference_outdir
         Array[Int] num_samples
@@ -17,7 +18,7 @@ workflow reference_level_tasks {
         String python_docker
         String multiqc_docker
         String utility_docker
-        String h5_scripts_docker
+        String h5_docker
     }
 
     scatter (n in num_samples) {
@@ -31,8 +32,8 @@ workflow reference_level_tasks {
                 sample_name = sample_name,
                 fastq1 = PE1,
                 fastq2 = PE2,
-                reference_name = reference.name,
-                reference_fasta = reference.fasta,
+                reference_name = reference_name,
+                reference_fasta = reference_fasta,
                 docker = ivar_docker
         }  
 
@@ -48,7 +49,7 @@ workflow reference_level_tasks {
             input: 
                 sample_name = sample_name,
                 trim_sort_bam = trim_primers_ivar.trim_sort_bam,
-                reference_fasta = reference.fasta,
+                reference_fasta = reference_fasta,
                 docker = ivar_docker
         }   
 
@@ -69,9 +70,9 @@ workflow reference_level_tasks {
             samtools_stats = alignment_metrics_samtools.stats,
             fastqc_clean_summary_metrics = fastqc_clean_summary_metrics,
             project_name  = project_name,
-            reference_fasta = reference.fasta,
+            reference_fasta = reference_fasta,
             primer_bed = primer_bed,
-            docker = h5_scripts_docker
+            docker = h5_docker
     }
 
     call ot.multiqc as multiqc_samtools {
@@ -140,20 +141,20 @@ task align_bwa {
 
     output {
         File bam = bam_fn
-        VersionInfo bwa_version_info = VersionInfo {
-            software: "bwa",
-            docker: docker,
-            version: '0.7.17-r1188'
+        VersionInfo bwa_version_info = {
+            "software": "bwa",
+            "docker": docker,
+            "version": '0.7.17-r1188'
         }
-        VersionInfo samtools_version_info = VersionInfo {
-            software: "samtools",
-            docker: docker,
-            version: read_string('SAMTOOLS_VERSION')
+        VersionInfo samtools_version_info = {
+            "software": "samtools",
+            "docker": docker,
+            "version": read_string('SAMTOOLS_VERSION')
         }
-        VersionInfo ivar_version_info = VersionInfo {
-            software: "ivar",
-            docker: docker,
-            version: read_string('IVAR_VERSION')
+        VersionInfo ivar_version_info = {
+            "software": "ivar",
+            "docker": docker,
+            "version": read_string('IVAR_VERSION')
         }
     }
 
@@ -279,11 +280,11 @@ task calculate_alignment_metrics {
     }
 
     command <<<
-        calculate_alignment_metrics.py --sample_names ~{sep=' ', sample_names} \
-                --consensus_fastas ~{sep=' ', consensus_fastas} \
-                --samtools_coverages ~{sep=' ', samtools_coverages} \
-                --samtools_stats ~{sep=' ', samtools_stats} \
-                --fastqc_clean_summary_metrics ~{sep=' ', fastqc_clean_summary_metrics} \
+        calculate_alignment_metrics.py --sample_names ${sep=" ", sample_names} \
+                --consensus_fastas ${sep=" ", consensus_fastas} \
+                --samtools_coverages ${sep=" ", samtools_coverages} \
+                --samtools_stats ${sep=" ", samtools_stats} \
+                --fastqc_clean_summary_metrics ${sep=" ", fastqc_clean_summary_metrics} \
                 --project_name ~{project_name} \
                 --reference_fasta ~{reference_fasta} \
                 --primer_bed ~{primer_bed} 

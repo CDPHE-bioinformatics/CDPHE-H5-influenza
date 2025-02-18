@@ -8,15 +8,11 @@ struct Sample {
     Int i
 }
 
-struct Reference {
-    String name
-    File fasta
-}
-
 struct PrimerScheme {
     String name
-    Array[Reference] references
     File bed
+    String reference_name
+    File reference_fasta
 }
 
 struct VersionInfo {
@@ -35,45 +31,34 @@ workflow declare_structs {
             docker = h5_docker
     }
 
-    Reference A_Bovine_Texas_24-029328-01_2024_H5N1_multi = object {
-        name: "A_Bovine_Texas_24-029328-01_2024_H5N1_multi",
-        fasta: refs.A_Bovine_Texas_24-029328-01_2024_H5N1_multi_fasta
+    PrimerScheme AVRL_H5N1_250bp = {
+        "name": "AVRL_H5N1_250bp",
+        "bed": refs.AVRL_H5N1_250bp_bed,
+        "reference_name": "A_Bovine_Texas_24_029328_01_2024_H5N1_multi",
+        "reference_fasta": refs.A_Bovine_Texas_24_029328_01_2024_H5N1_multi_fasta
     }
-    Reference A_Texas_37_2024_H5N1_HA-H5 = object {
-        name: "A_Texas_37_2024_H5N1_HA-H5_fasta",
-        fasta: refs.A_Texas_37_2024_H5N1_HA-H5_fasta
+    PrimerScheme houston = {
+        "name": "houston",
+        "bed": refs.houston_bed,
+        "reference_name": "houston_fluA_multi_fasta",
+        "reference_fasta": refs.houston_fluA_multi_fasta
     }
-    Reference houston_fluA_multi = object {
-        name: "houston_fluA_multi_fasta",
-        fasta: refs.houston_fluA_multi_fasta
-    } 
-    PrimerScheme AVRL_H5N1_250bp = object {
-        name: "AVRL_H5N1_250bp",
-        reference: A_Bovine_Texas_24-029328-01_2024_H5N1_multi,
-        bed: refs.AVRL_H5N1_250bp_bed
+    PrimerScheme human_h5_200 = {
+        "name": "human_h5_200",
+        "bed": refs.human_h5_200_bed,
+        "reference_name": "A_Texas_37_2024_H5N1_HA_H5_fasta",
+        "reference_fasta": refs.A_Texas_37_2024_H5N1_HA_H5_fasta
     }
-    PrimerScheme houston = object {
-        name: "houston",
-        reference:  houston_fluA_multi,
-        bed: refs.houston_bed
-    }
-    PrimerScheme human_h5_200 = object {
-        name: "human_h5_200",
-        reference:   A_Texas_37_2024_H5N1_HA-H5,
-        bed: refs.human_h5_200_bed
-    }
-    PrimerScheme human_h5_250 = object {
-        name: "human_h5_250",
-        reference:   A_Texas_37_2024_H5N1_HA-H5,
-        bed: refs.human_h5_250_bed
+    PrimerScheme human_h5_250 = {
+        "name": "human_h5_250",
+        "bed": refs.human_h5_250_bed,
+        "reference_name": "A_Texas_37_2024_H5N1_HA_H5_fasta",
+        "reference_fasta": refs.A_Texas_37_2024_H5N1_HA_H5_fasta
     }
 
 
     output {
-        Array[PrimerScheme] primer_schemes = [AVRL_H5N1_250bp, houston, human_h5_200, human_h5_250] 
-        Array[Reference] references = [A_Texas_37_2024_H5N1_HA-H5, 
-                                        A_Bovine_Texas_24-029328-01_2024_H5N1_multi,
-                                        houston_fluA_multi]
+        Array[PrimerScheme] primer_schemes = [AVRL_H5N1_250bp, houston, human_h5_200, human_h5_250]
     }
 }
 
@@ -82,9 +67,13 @@ task download_references {
         String docker
     }
 
+    command <<<
+        echo "Outputting references..."
+    >>>
+
     output {
-        File A_Bovine_Texas_24-029328-01_2024_H5N1_multi_fasta = "references/A_Bovine_Texas_24-029328-01_2024_H5N1_multi.fasta"
-        File A_Texas_37_2024_H5N1_HA-H5_fasta = "references/A_Texas_37_2024_H5N1_HA-H5.fasta"
+        File A_Bovine_Texas_24_029328_01_2024_H5N1_multi_fasta = "references/A_Bovine_Texas_24-029328-01_2024_H5N1_multi.fasta"
+        File A_Texas_37_2024_H5N1_HA_H5_fasta = "references/A_Texas_37_2024_H5N1_HA-H5.fasta"
         File houston_fluA_multi_fasta = "references/houston_fluA_multi.fasta"
         File houston_bed = "references/houston_fluA_primer.bed"
         File human_h5_200_bed = "references/human_h5_200bp_primer.bed"

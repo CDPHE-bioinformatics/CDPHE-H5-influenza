@@ -14,6 +14,8 @@ workflow h5_assembly_analysis {
         Array[File] fastq2s
         String project_name
         String gs_dir
+        File contaminants_fasta
+        File version_capture_py
     }
 
     meta {
@@ -36,11 +38,11 @@ workflow h5_assembly_analysis {
     String project_outdir = gs_dir + "/" +  project_name + "/terra_outputs/" + w_meta.version + "/"
 
     # Struct initilizations (subworkflow)
-    call initializations.declare_structs as ini {}
+    call initializations.declare_structs as ini { input: h5_docker = h5_docker}
 
     # Scatter samples to create structs
     scatter (idx in indexes) {
-        Sample sample = Sample {
+        Sample sample = object {
             name: samples[idx],
             primer: primers[idx],
             fastq1: fastq1s[idx],
@@ -59,15 +61,10 @@ workflow h5_assembly_analysis {
                 Float fastqs_size = size([all_samp.fastq1, all_samp.fastq2], "MiB")
                 if (fastqs_size > 1) {
                     Sample primer_sample = all_samp
-                    Int match_index = all_samp.i
-                }
-                if (fastqs_size < 1) {
-                    Sample empty_sample = all_samp
                 }
             }
         }
         Array[Sample] primer_samples = select_all(primer_sample)
-        Array[Sample] empty_samples = select_all(empty_sample)
         
         # Only call downstream tasks if primer was used
         if (length(primer_samples) > 0) {
@@ -79,9 +76,9 @@ workflow h5_assembly_analysis {
                     primer_samples = primer_samples,
                     primer_outdir = primer_outdir,
                     project_name = project_name,
+                    contaminants_fasta = contaminants_fasta,
                     fastqc_docker = fastqc_docker,
                     seqyclean_docker = seqyclean_docker,
-                    python_docker = python_docker,
                     multiqc_docker = multiqc_docker,
                     utility_docker = utility_docker,
                     h5_docker = h5_docker
@@ -91,11 +88,12 @@ workflow h5_assembly_analysis {
 
             # Call reference level tasks (subworkflow)
             Array[Int] num_samples = range(length(primer_samples)) 
-            String ref_name = ps.reference.name           
+            String ref_name = ps.reference_name           
             
             call rt.reference_level_tasks as r_sub {
                 input: 
-                    reference = p_ref,
+                    reference_name = ps.reference_name,
+                    reference_fasta = ps.reference_fasta,
                     project_name = project_name,
                     reference_outdir = primer_outdir + ref_name + "/",
                     num_samples = num_samples,
@@ -128,7 +126,8 @@ workflow h5_assembly_analysis {
             version_array = version_array,
             workflow_version = w_meta.version,
             project_name = project_name,
-            analysis_date = w_meta.analysis_date
+            analysis_date = w_meta.analysis_date,
+            version_capture_py = version_capture_py
     }
 
     call ot.transfer as transfer_vc {
@@ -147,7 +146,7 @@ workflow h5_assembly_analysis {
         Array[Array[File]] primers_summary_outputs = select_all(p_sub.p_summary_outputs)
         Array[Array[File]] primers_alignment_outputs = select_all(r_sub.alignment_outputs)
         Array[Array[File]] primers_consensus_outputs = select_all(r_sub.consensus_outputs)
-        Array[Array[File]] primers_summary_outputs = select_all(r_sub.ref_summary_outputs)
+        Array[Array[File]] primers_ref_summary_outputs = select_all(r_sub.ref_summary_outputs)
         Array[VersionInfo] version_capture = version_array
     }    
 }

@@ -1,6 +1,6 @@
 version 1.0
 
-import "h5_structs.wdl"
+import "structs.wdl"
 
 # workaround cromwell bug with read_json of Array
 # https://github.com/openwdl/wdl/issues/409
@@ -46,7 +46,7 @@ task capture_versions {
         String docker = 'mchether/py3-bio:v4'
     }
 
-    VersionInfoArray versions = VersionInfoArray { versions: version_array }
+    VersionInfoArray versions = object {versions: version_array}
     String out_fn = "version_capture_~{workflow_name}_~{project_name}_~{workflow_version}.csv"
 
     command <<<

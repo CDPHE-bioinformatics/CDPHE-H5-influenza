@@ -7,13 +7,12 @@ workflow primer_level_tasks {
         Array[Sample] primer_samples
         String primer_outdir
         String project_name
+        File contaminants_fasta
         String fastqc_docker
         String seqyclean_docker
-        String python_docker
         String multiqc_docker
         String utility_docker
         String h5_docker
-        File contaminants_fasta
     }
 
     scatter (sample in primer_samples) {
@@ -133,7 +132,7 @@ task fastqc {
 
     command <<<
         fastqc --outdir $PWD --extract --delete ~{fastq1} ~{fastq2}
-        fastqc --version | awk '/FastQC/ {print $2}' | tee VERSION  
+        fastqc --version | awk "/FastQC/ {print $2}" | tee VERSION  
         cp "~{fastq1_name}_fastqc/fastqc_data.txt" "~{fastq1_name}_fastqc_data.txt"
         cp "~{fastq2_name}_fastqc/fastqc_data.txt" "~{fastq2_name}_fastqc_data.txt"  
     >>>
@@ -142,10 +141,10 @@ task fastqc {
         File fastqc1_data = "~{fastq1_name}_fastqc_data.txt"
         File fastqc2_data = "~{fastq2_name}_fastqc_data.txt"
         String version = read_string('VERSION')
-        VersionInfo version_info = VersionInfo {
-            software: "fastqc",
-            docker: docker,
-            version: read_string('VERSION')
+        VersionInfo version_info = {
+            "software": "fastqc",
+            "docker": docker,
+            "version": read_string('VERSION')
         }
     }
 
@@ -170,9 +169,9 @@ task summarize_fastqc {
     }
     
     command <<<
-        summarize_fastqc.py --sample_names ~{sep=' ', sample_names} \
-            --fastqc1_data_array ~{sep=' ', fastqc1_data_array} \
-            --fastqc2_data_array ~{sep=' ',  fastqc2_data_array} \
+        summarize_fastqc.py --sample_names ${sep=" ", sample_names} \
+            --fastqc1_data_array ${sep=" ", fastqc1_data_array} \
+            --fastqc2_data_array ${sep=" ",  fastqc2_data_array} \
             --fastqc_type ~{fastqc_type}
     >>>
 
@@ -206,10 +205,10 @@ task seqyclean {
         File PE1 = "~{sample.name}_clean_PE1.fastq.gz"
         File PE2 = "~{sample.name}_clean_PE2.fastq.gz"
         File summary_stats = "~{sample.name}_clean_SummaryStatistics.tsv"
-        VersionInfo version_info = VersionInfo {
-            software: "seqyclean",
-            docker: docker,
-            version: VERSION
+        VersionInfo version_info = {
+            "software": "seqyclean",
+            "docker": docker,
+            "version": VERSION
         }
     }
 
@@ -233,7 +232,7 @@ task concat_fastqc_summary {
     }
 
     command <<<
-        concat_fastqc_summary.py --summarized_fastqcs ~{sep(' ',  summarized_fastqcs)} \
+        concat_fastqc_summary.py --summarized_fastqcs ${sep=' ',  summarized_fastqcs} \
             --project_name ~{project_name}
     >>>
 
