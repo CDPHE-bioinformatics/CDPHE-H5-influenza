@@ -68,10 +68,7 @@ task download_references {
     }
 
     command <<<
-        cd script
-        echo "$(ls)"
-        cd ../lost+found
-        echo "$(ls)"
+        echo "$(ls ../cromwell_root)"
         echo "Outputting references..."
     >>>
 
