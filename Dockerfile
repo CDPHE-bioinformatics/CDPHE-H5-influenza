@@ -12,6 +12,10 @@ COPY src/scripts/* ./scripts/
 
 COPY references/* ./references/
 
+COPY src/scripts/* ./
+
+COPY references/* ./
+
 COPY requirements.txt ./
 
 RUN pip3 install -r requirements.txt
