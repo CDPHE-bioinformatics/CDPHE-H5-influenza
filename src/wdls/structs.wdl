@@ -68,6 +68,7 @@ task download_references {
     }
 
     command <<<
+        ls
         echo "Outputting references..."
     >>>
 
