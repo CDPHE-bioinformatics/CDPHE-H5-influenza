@@ -72,13 +72,13 @@ task download_references {
     >>>
 
     output {
-        File A_Bovine_Texas_24_029328_01_2024_H5N1_multi_fasta = "references/A_Bovine_Texas_24-029328-01_2024_H5N1_multi.fasta"
-        File A_Texas_37_2024_H5N1_HA_H5_fasta = "references/A_Texas_37_2024_H5N1_HA-H5.fasta"
-        File houston_fluA_multi_fasta = "references/houston_fluA_multi.fasta"
-        File houston_bed = "references/houston_fluA_primer.bed"
-        File human_h5_200_bed = "references/human_h5_200bp_primer.bed"
-        File human_h5_250_bed = "references/human_h5_250bp_primer.bed"
-        File AVRL_H5N1_250bp_bed = "references/AVRL_H5N1_250bpAmpWGS_primer_v2.bed"
+        File A_Bovine_Texas_24_029328_01_2024_H5N1_multi_fasta = "A_Bovine_Texas_24-029328-01_2024_H5N1_multi.fasta"
+        File A_Texas_37_2024_H5N1_HA_H5_fasta = "A_Texas_37_2024_H5N1_HA-H5.fasta"
+        File houston_fluA_multi_fasta = "houston_fluA_multi.fasta"
+        File houston_bed = "houston_fluA_primer.bed"
+        File human_h5_200_bed = "human_h5_200bp_primer.bed"
+        File human_h5_250_bed = "human_h5_250bp_primer.bed"
+        File AVRL_H5N1_250bp_bed = "AVRL_H5N1_250bpAmpWGS_primer_v2.bed"
     }
 
     runtime {
