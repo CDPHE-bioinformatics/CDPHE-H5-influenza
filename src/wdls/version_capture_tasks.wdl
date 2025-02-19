@@ -42,6 +42,7 @@ task capture_versions {
         String workflow_version
         String project_name
         String analysis_date
+        String docker
     }
 
     VersionInfoArray versions = object {versions: version_array}
