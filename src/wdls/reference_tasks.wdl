@@ -280,7 +280,7 @@ task calculate_alignment_metrics {
     }
 
     command <<<
-        python calculate_alignment_metrics.py --sample_names ${sep=" ", sample_names} \
+        calculate_alignment_metrics.py --sample_names ${sep=" ", sample_names} \
                 --consensus_fastas ${sep=" ", consensus_fastas} \
                 --samtools_coverages ${sep=" ", samtools_coverages} \
                 --samtools_stats ${sep=" ", samtools_stats} \

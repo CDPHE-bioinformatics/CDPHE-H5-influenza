@@ -170,10 +170,7 @@ task summarize_fastqc {
     }
     
     command <<<
-        echo $PATH
-        echo ${PATH}
-        echo $PWD
-        python summarize_fastqc.py --sample_names ${sep=" ", sample_names} \
+        summarize_fastqc.py --sample_names ${sep=" ", sample_names} \
             --fastqc1_data_array ${sep=" ", fastqc1_data_array} \
             --fastqc2_data_array ${sep=" ",  fastqc2_data_array} \
             --fastqc_type ~{fastqc_type}
@@ -236,7 +233,7 @@ task concat_fastqc_summary {
     }
 
     command <<<
-        python concat_fastqc_summary.py --summarized_fastqcs ${sep=' ',  summarized_fastqcs} \
+        concat_fastqc_summary.py --summarized_fastqcs ${sep=' ',  summarized_fastqcs} \
             --project_name ~{project_name}
         echo $DOCKER_VERSION > VERSION
     >>>
