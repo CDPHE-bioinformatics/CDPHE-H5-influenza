@@ -280,11 +280,11 @@ task calculate_alignment_metrics {
     }
 
     command <<<
-        calculate_alignment_metrics.py --sample_names ${sep=" ", sample_names} \
-                --consensus_fastas ${sep=" ", consensus_fastas} \
-                --samtools_coverages ${sep=" ", samtools_coverages} \
-                --samtools_stats ${sep=" ", samtools_stats} \
-                --fastqc_clean_summary_metrics ${sep=" ", fastqc_clean_summary_metrics} \
+        calculate_alignment_metrics.py --sample_names ~{sep=" ", sample_names} \
+                --consensus_fastas ~{sep=" ", consensus_fastas} \
+                --samtools_coverages ~{sep=" ", samtools_coverages} \
+                --samtools_stats ~{sep=" ", samtools_stats} \
+                --fastqc_clean_summary_metrics ~{sep=" ", fastqc_clean_summary_metrics} \
                 --project_name ~{project_name} \
                 --reference_fasta ~{reference_fasta} \
                 --primer_bed ~{primer_bed} 
