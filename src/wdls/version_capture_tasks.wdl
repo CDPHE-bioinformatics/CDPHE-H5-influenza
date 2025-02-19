@@ -14,7 +14,7 @@ task workflow_metadata {
     }
     meta {
         description: "capture GitHub repository version"
-        volatile: true
+        # volatile: true
     }
 
     command <<<
