@@ -117,7 +117,7 @@ workflow primer_level_tasks {
         VersionInfo fastqc_version = select_first(fastqc_raw.version_info)
         VersionInfo seqyclean_version = select_first(seqyclean.version_info)
         VersionInfo multiqc_version = multiqc_fastqc.version_info
-        VersionInfo h5_docker_version = 
+        VersionInfo h5_docker_version = concat_fastqc_summary.version_info
     }
 }
 
@@ -214,8 +214,8 @@ task seqyclean {
     }
 
     runtime {
-        #cpu: 
-        #memory: 
+        cpu: 8
+        memory: "8G"
         docker: docker
     }
 }
