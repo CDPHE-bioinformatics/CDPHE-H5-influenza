@@ -68,7 +68,7 @@ task download_references {
     }
 
     command <<<
-        echo "$(ls ../cromwell_root -R)"
+        echo "$(ls ../../ -R)"
         echo "Outputting references..."
     >>>
 
