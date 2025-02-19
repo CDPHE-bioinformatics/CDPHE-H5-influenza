@@ -30,8 +30,8 @@ task multiqc {
         String docker
     }
 
-    String? task_prefix = if defined(task_name) then "~{module}_~{task_name}" else ""
-    String html_fn = "~{select_first([task_prefix, module])}_multiqc_report.html"
+    String prefix = if defined(task_name) then "~{module}_~{task_name}" else "~{module}"
+    String html_fn = "~{prefix}_multiqc_report.html"
     String base_cl_config = '--cl-config "show_analysis_paths: False'
 
     command <<<
