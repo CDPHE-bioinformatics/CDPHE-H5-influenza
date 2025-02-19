@@ -117,6 +117,7 @@ workflow primer_level_tasks {
         VersionInfo fastqc_version = select_first(fastqc_raw.version_info)
         VersionInfo seqyclean_version = select_first(seqyclean.version_info)
         VersionInfo multiqc_version = multiqc_fastqc.version_info
+        VersionInfo h5_docker_version = 
     }
 }
 
@@ -234,10 +235,16 @@ task concat_fastqc_summary {
     command <<<
         python concat_fastqc_summary.py --summarized_fastqcs ${sep=' ',  summarized_fastqcs} \
             --project_name ~{project_name}
+        echo $DOCKER_VERSION > VERSION
     >>>
 
     output {
         File fastqc_summary = "~{project_name}_reads_QC_summary.csv"
+        VersionInfo version_info = {
+            "software": "cdphe_h5_influenza docker",
+            "docker": docker,
+            "version": read_string("VERSION")
+        }
     }
 
     runtime {

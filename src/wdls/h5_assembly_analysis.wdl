@@ -117,11 +117,12 @@ workflow h5_assembly_analysis {
     VersionInfo fastqc_version = select_first(p_sub.fastqc_version)
     VersionInfo seqyclean_version = select_first(p_sub.seqyclean_version)
     VersionInfo multiqc_version = select_first(p_sub.multiqc_version)
+    VersionInfo h5_docker_version = select_first(p_sub.h5_docker_version)
     VersionInfo samtools_version = select_first(r_sub.samtools_version)
     VersionInfo bwa_version = select_first(r_sub.bwa_version)
     VersionInfo ivar_version = select_first(r_sub.ivar_version)
     Array[VersionInfo] version_array = [fastqc_version, seqyclean_version, multiqc_version, 
-                                samtools_version, bwa_version, ivar_version]
+                                        h5_docker_version, samtools_version, bwa_version, ivar_version]
 
     call vc.capture_versions as version_cap {
         input:
