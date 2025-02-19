@@ -233,7 +233,7 @@ task concat_fastqc_summary {
     }
 
     command <<<
-        concat_fastqc_summary.py --summarized_fastqcs ~{sep=' ',  summarized_fastqcs} \
+        concat_fastqc_summary.py --summarized_fastqcs ~{sep=" "  summarized_fastqcs} \
             --project_name ~{project_name}
         echo $DOCKER_VERSION > VERSION
     >>>
