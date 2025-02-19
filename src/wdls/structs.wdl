@@ -68,7 +68,7 @@ task download_references {
     }
 
     command <<<
-        echo "$(ls ../../ -R)"
+        cp ../../usr/src/app/references/* .
         echo "Outputting references..."
     >>>
 

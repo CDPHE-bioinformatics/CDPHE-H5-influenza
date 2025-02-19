@@ -8,13 +8,9 @@ ENV PATH="$PATH:/usr/src/app/scripts:/usr/src/app/references"
 
 ENV DOCKER_VERSION='v0.1.0-alpha'
 
-COPY src/scripts/* ./scripts/
-
-COPY references/* ./references/
-
 COPY src/scripts/* ./
 
-COPY references/* ./
+COPY references/* ./references/
 
 COPY requirements.txt ./
 
