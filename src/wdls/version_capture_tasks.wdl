@@ -38,19 +38,17 @@ task capture_versions {
 
     input {
         Array[VersionInfo] version_array
-        String workflow_name = 'h5_assembly_analysis'
+        String workflow_name
         String workflow_version
         String project_name
         String analysis_date
-        File version_capture_py
-        String docker = 'mchether/py3-bio:v4'
     }
 
     VersionInfoArray versions = object {versions: version_array}
     String out_fn = "version_capture_~{workflow_name}_~{project_name}_~{workflow_version}.csv"
 
     command <<<
-        python ~{version_capture_py} \
+        version_capture.py \
         --versions_json ~{write_json(versions)} \
         --workflow_name ~{workflow_name} \
         --workflow_version ~{workflow_version} \

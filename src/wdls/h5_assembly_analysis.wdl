@@ -31,6 +31,8 @@ workflow h5_assembly_analysis {
     String jammy_docker = 'ubuntu:jammy-20240627.1'
     String utility_docker = 'theiagen/utility:1.0'
     String h5_docker = 'ariannaesmith/cdphe_h5_influenza:latest'
+    String version_capture_docker = 'ariannaesmith/cdphe_wdl_version_capture:latest'
+    String workflow_name = 'h5_assembly_analysis'
 
     Array[Int] indexes = range(length(samples))
 
@@ -124,10 +126,11 @@ workflow h5_assembly_analysis {
     call vc.capture_versions as version_cap {
         input:
             version_array = version_array,
+            workflow_name = workflow_name,
             workflow_version = w_meta.version,
             project_name = project_name,
             analysis_date = w_meta.analysis_date,
-            version_capture_py = version_capture_py
+            docker = version_capture_docker
     }
 
     call ot.transfer as transfer_vc {
