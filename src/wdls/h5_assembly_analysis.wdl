@@ -32,11 +32,19 @@ workflow h5_assembly_analysis {
     String utility_docker = 'theiagen/utility:1.0'
     String h5_docker = 'ariannaesmith/cdphe_h5_influenza:latest'
     String version_capture_docker = 'ariannaesmith/cdphe_wdl_version_capture:latest'
+    
     String workflow_name = 'h5_assembly_analysis'
+    String workflow_version = 'v0.1.0-alpha'
+    String workflow_version_und = 'v0_1_0-alpha'
 
     Array[Int] indexes = range(length(samples))
 
-    call vc.workflow_metadata as w_meta { input: docker = jammy_docker }
+    call vc.workflow_metadata as w_meta { 
+        input: 
+            docker = jammy_docker
+            workflow_name = workflow_name
+            workflow_version = workflow_version
+    }
     String project_outdir = gs_dir + "/" +  project_name + "/terra_outputs/" + w_meta.version + "/"
 
     # Struct initilizations (subworkflow)
@@ -121,14 +129,15 @@ workflow h5_assembly_analysis {
     VersionInfo samtools_version = select_first(r_sub.samtools_version)
     VersionInfo bwa_version = select_first(r_sub.bwa_version)
     VersionInfo ivar_version = select_first(r_sub.ivar_version)
-    Array[VersionInfo] version_array = [fastqc_version, seqyclean_version, multiqc_version, 
-                                        h5_docker_version, samtools_version, bwa_version, ivar_version]
+    Array[VersionInfo] version_array = [w_meta.version_info, fastqc_version, seqyclean_version, 
+                                        multiqc_version, h5_docker_version, samtools_version, 
+                                        bwa_version, ivar_version]
 
     call vc.capture_versions as version_cap {
         input:
             version_array = version_array,
             workflow_name = workflow_name,
-            workflow_version = w_meta.version,
+            workflow_version = workflow_version_und,
             project_name = project_name,
             analysis_date = w_meta.analysis_date,
             docker = version_capture_docker

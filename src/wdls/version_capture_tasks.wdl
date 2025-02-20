@@ -1,7 +1,5 @@
 version 1.0
 
-import "structs.wdl"
-
 # workaround cromwell bug with read_json of Array
 # https://github.com/openwdl/wdl/issues/409
 struct VersionInfoArray {
@@ -11,6 +9,8 @@ struct VersionInfoArray {
 task workflow_metadata {
     input {
         String docker
+        String workflow_version
+        String workflow_name
     }
     meta {
         description: "capture GitHub repository version"
@@ -23,7 +23,11 @@ task workflow_metadata {
 
     output {
         String analysis_date = read_string("TODAY")
-        String version = "v0_1_0-alpha" 
+        VersionInfo version_info = {
+            "software": workflow_name,
+            "docker": "WDL workflow",
+            "version": workflow_version
+        }
     }
 
     runtime {
@@ -49,7 +53,7 @@ task capture_versions {
     String out_fn = "version_capture_~{workflow_name}_~{project_name}_~{workflow_version}.csv"
 
     command <<<
-        version_capture.py \
+        python3 version_capture.py \
         --versions_json ~{write_json(versions)} \
         --workflow_name ~{workflow_name} \
         --workflow_version ~{workflow_version} \
