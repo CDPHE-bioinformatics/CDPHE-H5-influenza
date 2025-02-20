@@ -1,5 +1,11 @@
 version 1.0
 
+struct VersionInfo {
+  String software
+  String docker
+  String version
+}
+
 # workaround cromwell bug with read_json of Array
 # https://github.com/openwdl/wdl/issues/409
 struct VersionInfoArray {
@@ -9,8 +15,8 @@ struct VersionInfoArray {
 task workflow_metadata {
     input {
         String docker
-        String workflow_version
         String workflow_name
+        String workflow_version
     }
     meta {
         description: "capture GitHub repository version"

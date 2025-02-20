@@ -41,11 +41,11 @@ workflow h5_assembly_analysis {
 
     call vc.workflow_metadata as w_meta { 
         input: 
-            docker = jammy_docker
-            workflow_name = workflow_name
+            docker = jammy_docker,
+            workflow_name = workflow_name,
             workflow_version = workflow_version
     }
-    String project_outdir = gs_dir + "/" +  project_name + "/terra_outputs/" + w_meta.version + "/"
+    String project_outdir = gs_dir + "/" +  project_name + "/terra_outputs/" + workflow_version_und + "/"
 
     # Struct initilizations (subworkflow)
     call initializations.declare_structs as ini { input: h5_docker = h5_docker}
