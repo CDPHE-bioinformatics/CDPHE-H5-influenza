@@ -65,7 +65,10 @@ task capture_versions {
         --workflow_name ~{workflow_name} \
         --workflow_version ~{workflow_version} \
         --project_name ~{project_name} \
-        --analysis_date ~{analysis_date}
+        --analysis_date ~{analysis_date} \
+        --docker_name $NAME \
+        --docker_host $HOST  \
+        --docker_version $VERSION  \
     >>>
 
     output {
