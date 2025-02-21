@@ -146,8 +146,8 @@ task fastqc {
 
         fastq1_data_name="~{fastq1_data_name}"
         fastq2_data_name="~{fastq2_data_name}"
-        r1_info=$(${summarize_fastqc} ${fastq1_data_name})
-        r2_info=$(${summarize_fastqc} ${fastq2_data_name})
+        r1_info=$(summarize_fastqc ${fastq1_data_name})
+        r2_info=$(summarize_fastqc ${fastq2_data_name})
         echo "sample_name,project_name,primer_name,r1_total_reads,r1_flagged_reads_as_poor_quality,r1_read_len,r2_total_reads,r2_flagged_reads_as_poor_quality,r2_read_len" >> ~{summary_metrics_fn} 
         echo "~{sample_name},~{project_name},~{primer_name},${r1_info},${r2_info}" >> ~{summary_metrics_fn}
     >>>
@@ -171,6 +171,61 @@ task fastqc {
     }
 }
 
+task clean_reads_fastp {
+    input {
+        Sample sample
+        String docker
+    }
+
+    String fastq1_name = basename(sample.fastq1, ".fastq.gz")
+    String fastq2_name = basename(sample.fastq2, ".fastq.gz")
+    String cleaned_1_name = "~{fastq1_name}_clean.fastq.gz"
+    String cleaned_2_name = "~{fastq2_name}_clean.fastq.gz"
+    String unpaired_1_name = "~{fastq1_name}_unpaired.fastq.gz"
+    String unpaired_2_name = "~{fastq2_name}_unpaired.fastq.gz"
+    String fastp_html_name = "~{sample.name}_fastp.html"
+    String fastp_json_name = "~{sample.name}_fastp.json"
+
+    command <<<
+        fastp --version | tee VERSION
+        fastp \
+            --in1 ~{sample.fastq1} \
+            --in2 ~{sample.fastq2} \
+            --out1 ~{cleaned_1_name} \
+            --out2 ~{cleaned_2_name}  \
+            --unpaired1 unpaired_1_name \
+            --unpaired2 unpaired_2_name \
+            --cut_tail \
+            --cut_tail_window_size 4 \
+            --cut_tail_mean_quality 30 \
+            --length_required 70 \
+            --detect_adapter_for_pe \
+            --trim_poly_g \
+            --html fastp_html_name \
+            --json fastp_json_name
+    >>>
+
+    output {
+        File fastq_1_cleaned = cleaned_1_name
+        File fastq_2_cleaned = cleaned_2_name
+        File fastq_1_unpaired = unpaired_1_name
+        File fastq_2_unpaired = unpaired_2_name
+        File fastp_html = fastp_html_name
+        File fastp_json = fastp_json_name
+
+        VersionInfo version_info = {
+            "software": "fastp",
+            "docker": docker,
+            "version": read_string("VERSION")
+        }
+    }
+
+    runtime {
+        cpu: 8
+        memory: "8G"
+        docker: docker
+    }
+}
 
 task seqyclean {
     input {

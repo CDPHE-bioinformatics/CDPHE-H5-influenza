@@ -23,6 +23,7 @@ workflow h5_assembly_analysis {
 
     # private declarations
     String fastqc_docker = 'staphb/fastqc:0.12.1'
+    String fastq_docker = 'staphb/fastp:0.23.2'
     String seqyclean_docker = 'staphb/seqyclean:1.10.09'
     String ivar_docker = 'staphb/ivar:1.4.2'
     String python_docker = 'ariannaesmith/py3.10.9-bio'
