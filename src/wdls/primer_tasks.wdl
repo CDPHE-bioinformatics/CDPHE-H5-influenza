@@ -5,6 +5,7 @@ import "other_tasks.wdl" as ot
 workflow primer_level_tasks {
     input {
         Array[Sample] primer_samples
+        String primer_name
         String primer_outdir
         String project_name
         File contaminants_fasta
@@ -17,11 +18,17 @@ workflow primer_level_tasks {
 
     scatter (sample in primer_samples) {
         String sample_name = sample.name
+        String fastq_raw = "raw"
+        String fastq_clean = "clean"
         # Call sample level tasks
         call fastqc as fastqc_raw {
             input: 
+                sample_name = sample_name,
+                project_name = project_name,
+                primer_name = primer_name,
                 fastq1 = sample.fastq1, 
                 fastq2 = sample.fastq2, 
+                fastq_type = fastq_raw,
                 docker = fastqc_docker
         }
         
@@ -34,36 +41,22 @@ workflow primer_level_tasks {
 
         call fastqc as fastqc_clean {
             input: 
+                sample_name = sample_name,
+                project_name = project_name,
+                primer_name = primer_name,
                 fastq1 = seqyclean.PE1, 
                 fastq2 = seqyclean.PE2, 
+                fastq_type = fastq_clean,
                 docker = fastqc_docker
         }
 
     }
 
-    call summarize_fastqc as summarize_fastqc_raw {
-        input: 
-            sample_names = sample_name,
-            fastqc1_data_array = fastqc_raw.fastqc1_data,
-            fastqc2_data_array = fastqc_raw.fastqc2_data,
-            fastqc_type = "raw",
-            docker = h5_docker
-    }
-
-    call summarize_fastqc as summarize_fastqc_clean {
-        input: 
-            sample_names = sample_name,
-            fastqc1_data_array = fastqc_clean.fastqc1_data,
-            fastqc2_data_array = fastqc_clean.fastqc2_data,
-            fastqc_type = "clean",
-            docker = h5_docker
-    }
-
     call concat_fastqc_summary {
         input:
-            sample_names = sample_name,
-            summarized_fastqcs = flatten([summarize_fastqc_raw.summary_metrics, 
-                                            summarize_fastqc_clean.summary_metrics]),
+            raw_summarized_fastqcs = fastqc_raw.summary_metrics, 
+            clean_summarized_fastqcs = fastqc_clean.summary_metrics,
+            primer_name = primer_name,
             project_name = project_name,
             docker = h5_docker
     }
@@ -87,7 +80,6 @@ workflow primer_level_tasks {
     }
     
     # Transfer primer level files
-    
     Array[File] fastqc_raw_output = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data])
     Array[File] fastqc_clean_output = flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data])
     Array[File] seqyclean_output = flatten([seqyclean.PE1, seqyclean.PE2])
@@ -112,7 +104,7 @@ workflow primer_level_tasks {
         Array[File] cleaned_PE1 = seqyclean.PE1
         Array[File] cleaned_PE2 = seqyclean.PE2
         Array[File] p_summary_outputs = p_summary_output
-        Array[File] fastqc_clean_summary_metrics = summarize_fastqc_clean.summary_metrics
+        Array[File] fastqc_clean_summary_metrics = fastqc_clean.summary_metrics
         File fastqc_summary = concat_fastqc_summary.fastqc_summary
         VersionInfo fastqc_version = select_first(fastqc_raw.version_info)
         VersionInfo seqyclean_version = select_first(seqyclean.version_info)
@@ -123,24 +115,47 @@ workflow primer_level_tasks {
 
 task fastqc {
     input {
+        String sample_name
+        String project_name
+        String primer_name
         File fastq1
         File fastq2
+        String fastq_type
         String docker
     }
 
     String fastq1_name = basename(fastq1, ".fastq.gz")
     String fastq2_name = basename(fastq2, ".fastq.gz")
+    String fastq1_data_name = "~{fastq1_name}_fastqc_data.txt"
+    String fastq2_data_name = "~{fastq2_name}_fastqc_data.txt"
+    String summary_metrics_fn = "~{sample_name}_~{fastq_type}_summary_metrics.tsv"
 
     command <<<
         fastqc --outdir $PWD --extract --delete ~{fastq1} ~{fastq2}
         fastqc --version | awk "{print $NF}" | tee VERSION  
-        cp "~{fastq1_name}_fastqc/fastqc_data.txt" "~{fastq1_name}_fastqc_data.txt"
-        cp "~{fastq2_name}_fastqc/fastqc_data.txt" "~{fastq2_name}_fastqc_data.txt"  
+        cp "~{fastq1_name}_fastqc/fastqc_data.txt" ~{fastq1_data_name}
+        cp "~{fastq2_name}_fastqc/fastqc_data.txt" ~{fastq2_data_name}
+
+        # Summarize output to simpler csv file
+        summarize_fastqc () {
+            total_seqs=$(grep "Total Sequences" $1 | cut -f 2)
+            flagged_reads=$(grep "Sequences flagged as poor quality" $1 | cut -f 2)
+            sequence_length=$(grep "Sequence length" $1 | cut -f 2)
+            echo $total_seqs,$flagged_reads,$sequence_length
+        }
+
+        fastq1_data_name="~{fastq1_data_name}"
+        fastq2_data_name="~{fastq2_data_name}"
+        r1_info=${summarize_fastqc fastq1_data_name}
+        r2_info=${summarize_fastqc fastq2_data_name}
+        echo "sample_name,project_name,primer_name,r1_total_reads,r1_flagged_reads_as_poor_quality,r1_read_len,r2_total_reads,r2_flagged_reads_as_poor_quality,r2_read_len" >> ~{summary_metrics_fn} 
+        echo "~{sample_name},~{project_name},~{primer_name},${r1_info},${r2_info}" >> ~{summary_metrics_fn}
     >>>
 
     output {
-        File fastqc1_data = "~{fastq1_name}_fastqc_data.txt"
-        File fastqc2_data = "~{fastq2_name}_fastqc_data.txt"
+        File fastqc1_data = fastq1_data_name
+        File fastqc2_data = fastq2_data_name
+        File summary_metrics = summary_metrics_fn
         String version = read_string('VERSION')
         VersionInfo version_info = {
             "software": "fastqc",
@@ -156,36 +171,6 @@ task fastqc {
     }
 }
 
-task summarize_fastqc {
-    input {
-        Array[String] sample_names
-        Array[File] fastqc1_data_array
-        Array[File] fastqc2_data_array
-        String fastqc_type
-        String docker
-    }
-
-    meta {
-        volatile: true
-    }
-    
-    command <<<
-        summarize_fastqc.py --sample_names ~{sep=" " sample_names} \
-            --fastqc1_data_array ~{sep=" " fastqc1_data_array} \
-            --fastqc2_data_array ~{sep=" "  fastqc2_data_array} \
-            --fastqc_type ~{fastqc_type}
-    >>>
-
-    output {
-        Array[File] summary_metrics = glob("*_summary_metrics.tsv")
-    }
-
-    runtime {
-        #cpu: 
-        #memory: 
-        docker: docker
-    }
-}
 
 task seqyclean {
     input {
@@ -222,8 +207,9 @@ task seqyclean {
 
 task concat_fastqc_summary {
     input {
-        Array[String] sample_names
-        Array[File] summarized_fastqcs
+        Array[File] clean_summarized_fastqcs
+        Array[File] raw_summarized_fastqcs
+        String primer_name
         String project_name
         String docker
     }
@@ -232,14 +218,18 @@ task concat_fastqc_summary {
         volatile: true
     }
 
+    String out_fn = "~{project_name}_~{primer_name}_reads_QC_summary.csv"
+
     command <<<
-        concat_fastqc_summary.py --summarized_fastqcs ~{sep=" "  summarized_fastqcs} \
-            --project_name ~{project_name}
+        concat_fastqc_summary.py \
+            --raw_summarized_fastqcs ~{sep=" " raw_summarized_fastqcs} \
+            --clean_summarized_fastqcs ~{sep=" " clean_summarized_fastqcs} \
+            --out_fn ~{out_fn} 
         echo $DOCKER_VERSION > VERSION
     >>>
 
     output {
-        File fastqc_summary = "~{project_name}_reads_QC_summary.csv"
+        File fastqc_summary = out_fn
         VersionInfo version_info = {
             "software": "cdphe_h5_influenza docker",
             "docker": docker,
