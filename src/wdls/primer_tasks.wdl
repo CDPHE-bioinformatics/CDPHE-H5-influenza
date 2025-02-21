@@ -146,8 +146,8 @@ task fastqc {
 
         fastq1_data_name="~{fastq1_data_name}"
         fastq2_data_name="~{fastq2_data_name}"
-        r1_info=${summarize_fastqc fastq1_data_name}
-        r2_info=${summarize_fastqc fastq2_data_name}
+        r1_info=$(${summarize_fastqc} ${fastq1_data_name})
+        r2_info=$(${summarize_fastqc} ${fastq2_data_name})
         echo "sample_name,project_name,primer_name,r1_total_reads,r1_flagged_reads_as_poor_quality,r1_read_len,r2_total_reads,r2_flagged_reads_as_poor_quality,r2_read_len" >> ~{summary_metrics_fn} 
         echo "~{sample_name},~{project_name},~{primer_name},${r1_info},${r2_info}" >> ~{summary_metrics_fn}
     >>>
