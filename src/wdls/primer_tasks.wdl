@@ -133,7 +133,7 @@ task fastqc {
 
     command <<<
         fastqc --outdir $PWD --extract --delete ~{fastq1} ~{fastq2}
-        fastqc --version | awk "/FastQC/ {print $2}" | tee VERSION  
+        fastqc --version | awk "{print $NF}" | tee VERSION  
         cp "~{fastq1_name}_fastqc/fastqc_data.txt" "~{fastq1_name}_fastqc_data.txt"
         cp "~{fastq2_name}_fastqc/fastqc_data.txt" "~{fastq2_name}_fastqc_data.txt"  
     >>>
