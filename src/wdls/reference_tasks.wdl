@@ -94,7 +94,7 @@ workflow reference_level_tasks {
                                     calculate_alignment_metrics.aln_metrics]
     
     Array[String] reference_task_dirs = ["alignments", "assemblies", "samtools", "summary_results"]
-    Array[Array[File]] reference_task_files = [alignment_output, consensus_output, samtools_output, ref_summary_output]
+    Array[Array[File]] reference_task_files = [alignment_output, consensus_output, samtools_output, summary_output]
 
     scatter (dir_files in zip(reference_task_dirs, reference_task_files)) {       
         call ot.transfer {
@@ -112,7 +112,7 @@ workflow reference_level_tasks {
         VersionInfo ivar_version = select_first(align_bwa.ivar_version_info)
         Array[File] alignment_outputs = alignment_output
         Array[File] consensus_outputs = consensus_output
-        Array[File] ref_summary_outputs = ref_summary_output   
+        Array[File] ref_summary_outputs = summary_output   
     }
 }
 
