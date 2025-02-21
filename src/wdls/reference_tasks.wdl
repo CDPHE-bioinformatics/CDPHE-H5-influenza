@@ -15,7 +15,6 @@ workflow reference_level_tasks {
         Array[File] fastqc_clean_summary_metrics
         File primer_bed
         String ivar_docker
-        String python_docker
         String multiqc_docker
         String utility_docker
         String h5_docker
