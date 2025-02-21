@@ -68,7 +68,7 @@ task download_references {
     }
 
     command <<<
-        cp ../../usr/src/app/references/* .
+        cp $APPDIR/references/* .
         echo "Outputting references..."
     >>>
 
