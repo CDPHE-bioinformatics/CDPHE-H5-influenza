@@ -159,7 +159,7 @@ workflow h5_assembly_analysis {
         Array[Array[File]] primers_summary_outputs = select_all(p_sub.p_summary_outputs)
         Array[Array[File]] primers_alignment_outputs = select_all(r_sub.alignment_outputs)
         Array[Array[File]] primers_consensus_outputs = select_all(r_sub.consensus_outputs)
-        Array[Array[File]] primers_ref_summary_outputs = select_all(r_sub.ref_summary_outputs)
+        Array[Array[File]] primers_ref_summary_outputs = select_all(r_sub.summary_outputs)
         Array[VersionInfo] version_capture = version_array
     }    
 }

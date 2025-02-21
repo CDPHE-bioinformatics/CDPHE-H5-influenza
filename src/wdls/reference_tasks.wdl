@@ -112,7 +112,7 @@ workflow reference_level_tasks {
         VersionInfo ivar_version = select_first(align_bwa.ivar_version_info)
         Array[File] alignment_outputs = alignment_output
         Array[File] consensus_outputs = consensus_output
-        Array[File] ref_summary_outputs = summary_output   
+        Array[File] summary_outputs = summary_output   
     }
 }
 
