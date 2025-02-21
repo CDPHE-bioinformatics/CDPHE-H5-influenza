@@ -31,7 +31,7 @@ task workflow_metadata {
         String analysis_date = read_string("TODAY")
         VersionInfo version_info = {
             "software": workflow_name,
-            "docker": "WDL workflow",
+            "docker": "",
             "version": workflow_version
         }
     }
