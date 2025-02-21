@@ -87,14 +87,14 @@ workflow reference_level_tasks {
     # Transfer reference level files
     Array[File] alignment_output = flatten([trim_primers_ivar.trim_sort_bam, trim_primers_ivar.trim_sort_bai])
     Array[File] consensus_output = generate_consensus_ivar.consensus_fasta
-    Array[File] ref_summary_output = flatten([alignment_metrics_samtools.coverage, 
-                                            alignment_metrics_samtools.stats, 
-                                            [multiqc_samtools.html_report, 
-                                            calculate_alignment_metrics.percent_coverage,
-                                            calculate_alignment_metrics.aln_metrics]])
+    Array[File] samtools_output = flatten([alignment_metrics_samtools.coverage, 
+                                            alignment_metrics_samtools.stats])
+    Array[File] summary_output = [multiqc_samtools.html_report, 
+                                    calculate_alignment_metrics.percent_coverage,
+                                    calculate_alignment_metrics.aln_metrics]
     
-    Array[String] reference_task_dirs = ["alignments", "assemblies", "metrics"]
-    Array[Array[File]] reference_task_files = [alignment_output, consensus_output, ref_summary_output]
+    Array[String] reference_task_dirs = ["alignments", "assemblies", "samtools", "summary_results"]
+    Array[Array[File]] reference_task_files = [alignment_output, consensus_output, samtools_output, ref_summary_output]
 
     scatter (dir_files in zip(reference_task_dirs, reference_task_files)) {       
         call ot.transfer {
