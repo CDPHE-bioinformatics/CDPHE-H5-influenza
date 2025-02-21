@@ -15,7 +15,6 @@ workflow h5_assembly_analysis {
         String project_name
         String gs_dir
         File contaminants_fasta
-        File version_capture_py
     }
 
     meta {
@@ -35,7 +34,7 @@ workflow h5_assembly_analysis {
     
     String workflow_name = 'h5_assembly_analysis'
     String workflow_version = 'v0.1.0-alpha'
-    String workflow_version_und = 'v0_1_0-alpha'
+    String workflow_version_und = sub(workflow_version, "\\.", "_")
 
     Array[Int] indexes = range(length(samples))
 
@@ -78,12 +77,13 @@ workflow h5_assembly_analysis {
         
         # Only call downstream tasks if primer was used
         if (length(primer_samples) > 0) {
-            String p_name = ps.name
-            String primer_outdir = project_outdir + p_name + "/"
+            String primer_name = ps.name
+            String primer_outdir = project_outdir + primer_name + "/"
             # Call primer level tasks (subworkflow)
             call pt.primer_level_tasks as p_sub {
                 input:
                     primer_samples = primer_samples,
+                    primer_name = primer_name,
                     primer_outdir = primer_outdir,
                     project_name = project_name,
                     contaminants_fasta = contaminants_fasta,
@@ -98,7 +98,6 @@ workflow h5_assembly_analysis {
 
             # Call reference level tasks (subworkflow)
             Array[Int] num_samples = range(length(primer_samples)) 
-            String ref_name = ps.reference_name           
             
             call rt.reference_level_tasks as r_sub {
                 input: 
@@ -113,7 +112,6 @@ workflow h5_assembly_analysis {
                     fastqc_clean_summary_metrics = p_sub.fastqc_clean_summary_metrics,
                     primer_bed = ps.bed,
                     ivar_docker = ivar_docker,
-                    python_docker = python_docker,
                     multiqc_docker = multiqc_docker,
                     utility_docker = utility_docker,
                     h5_docker = h5_docker
@@ -152,7 +150,7 @@ workflow h5_assembly_analysis {
     }
 
     output { 
-        Array[String] primers_used = select_all(p_name)
+        Array[String] primers_used = select_all(primer_name)
         Array[Array[File]] primers_fastqc_raw_outputs = select_all(p_sub.fastqc_raw_outputs)
         Array[Array[File]] primers_fastqc_clean_outputs = select_all(p_sub.fastqc_clean_outputs)
         Array[Array[File]] primers_seqyclean_outputs = select_all(seqyclean_output)
