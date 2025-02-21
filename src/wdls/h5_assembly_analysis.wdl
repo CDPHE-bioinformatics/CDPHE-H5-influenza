@@ -105,7 +105,7 @@ workflow h5_assembly_analysis {
                     reference_name = ps.reference_name,
                     reference_fasta = ps.reference_fasta,
                     project_name = project_name,
-                    reference_outdir = primer_outdir + ref_name + "/",
+                    reference_outdir = primer_outdir,
                     num_samples = num_samples,
                     primer_samples = primer_samples,
                     cleaned_PE1 = p_sub.cleaned_PE1,
