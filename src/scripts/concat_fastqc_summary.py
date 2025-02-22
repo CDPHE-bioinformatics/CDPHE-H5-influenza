@@ -35,7 +35,10 @@ def combine_fastqc_summaries(raw_summarized_fastqcs,
     df_clean = pd.concat(clean_dfs, ignore_index = True)
     df_raw = pd.concat(raw_dfs, ignore_index = True)
 
-    df = df_raw.merge(df_clean, on = 'sample_name', how = 'outer', suffixes = ('_raw', '_filtered'))
+    df = df_raw.merge(df_clean, 
+                      on = ['sample_name', 'project_name', 'primer_name'], 
+                      how = 'outer', 
+                      suffixes = ('_raw', '_filtered'))
 
     # calculate total reads diff
     df['total_reads_diff'] = df['r1_total_reads_raw'] - df['r1_total_reads_filtered']
