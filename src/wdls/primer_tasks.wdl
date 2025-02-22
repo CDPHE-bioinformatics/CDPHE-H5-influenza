@@ -8,9 +8,8 @@ workflow primer_level_tasks {
         String primer_name
         String primer_outdir
         String project_name
-        File contaminants_fasta
         String fastqc_docker
-        String seqyclean_docker
+        String fastp_docker
         String multiqc_docker
         String utility_docker
         String h5_docker
@@ -32,11 +31,11 @@ workflow primer_level_tasks {
                 docker = fastqc_docker
         }
         
-        call seqyclean {
-            input: 
+
+        call fastp {
+            input:
                 sample = sample,
-                contaminants_fasta = contaminants_fasta,
-                docker = seqyclean_docker
+                docker = fastp_docker
         }
 
         call fastqc as fastqc_clean {
@@ -44,8 +43,8 @@ workflow primer_level_tasks {
                 sample_name = sample_name,
                 project_name = project_name,
                 primer_name = primer_name,
-                fastq1 = seqyclean.PE1, 
-                fastq2 = seqyclean.PE2, 
+                fastq1 = fastp.fastq_1_cleaned, 
+                fastq2 = fastp.fastq_2_cleaned, 
                 fastq_type = fastq_clean,
                 docker = fastqc_docker
         }
@@ -71,22 +70,21 @@ workflow primer_level_tasks {
             docker = multiqc_docker
     }
 
-    call ot.multiqc as multiqc_seqyclean {
+    call ot.multiqc as multiqc_fastp {
         input:
-            files = seqyclean.summary_stats,
-            module = "seqyclean",
-            cl_config = 'extra_fn_clean_exts: ["_clean"]',
+            files = fastp.fastp_json,
+            module = "fastp",
             docker = multiqc_docker
     }
     
     # Transfer primer level files
     Array[File] fastqc_raw_output = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data])
     Array[File] fastqc_clean_output = flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data])
-    Array[File] seqyclean_output = flatten([seqyclean.PE1, seqyclean.PE2])
-    Array[File] p_summary_output = [multiqc_fastqc.html_report, multiqc_seqyclean.html_report, concat_fastqc_summary.fastqc_summary]
+    Array[File] fastp_output = flatten([fastp.fastq_1_cleaned, fastp.fastq_2_cleaned])
+    Array[File] p_summary_output = [multiqc_fastqc.html_report, multiqc_fastp.html_report, concat_fastqc_summary.fastqc_summary]
 
-    Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "seqyclean", "summary_results"]
-    Array[Array[File]] primer_task_files = [fastqc_raw_output, fastqc_clean_output, seqyclean_output, p_summary_output]       
+    Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "fastp", "summary_results"]
+    Array[Array[File]] primer_task_files = [fastqc_raw_output, fastqc_clean_output, fastp_output, p_summary_output]       
 
     scatter (dir_files in zip(primer_task_dirs, primer_task_files)) {       
         call ot.transfer {
@@ -101,13 +99,13 @@ workflow primer_level_tasks {
     output {
         Array[File] fastqc_raw_outputs = fastqc_raw_output
         Array[File] fastqc_clean_outputs = fastqc_clean_output
-        Array[File] cleaned_PE1 = seqyclean.PE1
-        Array[File] cleaned_PE2 = seqyclean.PE2
+        Array[File] cleaned_PE1 = fastp.fastq_1_cleaned
+        Array[File] cleaned_PE2 = fastp.fastq_2_cleaned
         Array[File] p_summary_outputs = p_summary_output
         Array[File] fastqc_clean_summary_metrics = fastqc_clean.summary_metrics
         File fastqc_summary = concat_fastqc_summary.fastqc_summary
         VersionInfo fastqc_version = select_first(fastqc_raw.version_info)
-        VersionInfo seqyclean_version = select_first(seqyclean.version_info)
+        VersionInfo fastp_version = select_first(fastp.version_info)
         VersionInfo multiqc_version = multiqc_fastqc.version_info
         VersionInfo h5_docker_version = concat_fastqc_summary.version_info
     }
@@ -171,7 +169,7 @@ task fastqc {
     }
 }
 
-task clean_reads_fastp {
+task fastp {
     input {
         Sample sample
         String docker
@@ -189,20 +187,17 @@ task clean_reads_fastp {
     command <<<
         fastp --version | tee VERSION
         fastp \
-            --in1 ~{sample.fastq1} \
-            --in2 ~{sample.fastq2} \
-            --out1 ~{cleaned_1_name} \
-            --out2 ~{cleaned_2_name}  \
-            --unpaired1 unpaired_1_name \
-            --unpaired2 unpaired_2_name \
+            --in1 ~{sample.fastq1} --in2 ~{sample.fastq2} \
+            --out1 ~{cleaned_1_name} --out2 ~{cleaned_2_name}  \
+            --unpaired1 ~{unpaired_1_name} --unpaired2 ~{unpaired_2_name} \
             --cut_tail \
             --cut_tail_window_size 4 \
             --cut_tail_mean_quality 30 \
             --length_required 70 \
             --detect_adapter_for_pe \
             --trim_poly_g \
-            --html fastp_html_name \
-            --json fastp_json_name
+            --html ~{fastp_html_name} \
+            --json ~{fastp_json_name}
     >>>
 
     output {
@@ -217,39 +212,6 @@ task clean_reads_fastp {
             "software": "fastp",
             "docker": docker,
             "version": read_string("VERSION")
-        }
-    }
-
-    runtime {
-        cpu: 8
-        memory: "8G"
-        docker: docker
-    }
-}
-
-task seqyclean {
-    input {
-        Sample sample
-        File contaminants_fasta
-        String docker
-    }
-
-    String out_name = "~{sample.name}_clean"
-    # seqyclean doesn't have a version command
-    String VERSION = sub(docker, "staphb/seqyclean:", "")
-
-    command <<<
-        seqyclean -minlen 25 -qual 30 30 -gz -1 ~{sample.fastq1} -2 ~{sample.fastq2} -c ~{contaminants_fasta} -o ~{out_name}
-    >>>
-
-    output {
-        File PE1 = "~{sample.name}_clean_PE1.fastq.gz"
-        File PE2 = "~{sample.name}_clean_PE2.fastq.gz"
-        File summary_stats = "~{sample.name}_clean_SummaryStatistics.tsv"
-        VersionInfo version_info = {
-            "software": "seqyclean",
-            "docker": docker,
-            "version": VERSION
         }
     }
 
