@@ -66,10 +66,11 @@ workflow reference_level_tasks {
             sample_names = sample_name,
             consensus_fastas = generate_consensus_ivar.consensus_fasta,
             samtools_coverages = alignment_metrics_samtools.coverage,
-            samtools_stats = alignment_metrics_samtools.stats,
+            mapped_reads = alignment_metrics_samtools.mapped_reads,
             fastqc_clean_summary_metrics = fastqc_clean_summary_metrics,
             project_name  = project_name,
             reference_fasta = reference_fasta,
+            reference_name = reference_name,
             primer_bed = primer_bed,
             docker = h5_docker
     }
@@ -247,11 +248,13 @@ task alignment_metrics_samtools {
     command <<<
         samtools coverage -o ~{coverage_fn} ~{trim_sort_bam}
         samtools stats ~{trim_sort_bam} > ~{stats_fn}
+        grep "reads mapped:" ~{stats_fn} | cut -f 3 >> MAPPED_READS
     >>>
 
     output {
         File coverage = coverage_fn
         File stats = stats_fn
+        String mapped_reads = read_string('MAPPED_READS')
     }
 
     runtime {
@@ -266,10 +269,11 @@ task calculate_alignment_metrics {
         Array[String] sample_names
         Array[File] consensus_fastas
         Array[File] samtools_coverages
-        Array[File] samtools_stats
+        Array[String] mapped_reads
         Array[File] fastqc_clean_summary_metrics
         String project_name
         File reference_fasta
+        String reference_name
         File primer_bed
         String docker
     }
@@ -282,10 +286,11 @@ task calculate_alignment_metrics {
         calculate_alignment_metrics.py --sample_names ~{sep=" " sample_names} \
                 --consensus_fastas ~{sep=" " consensus_fastas} \
                 --samtools_coverages ~{sep=" " samtools_coverages} \
-                --samtools_stats ~{sep=" " samtools_stats} \
+                --mapped_reads ~{sep=" " mapped_reads} \
                 --fastqc_clean_summary_metrics ~{sep=" " fastqc_clean_summary_metrics} \
                 --project_name ~{project_name} \
                 --reference_fasta ~{reference_fasta} \
+                --reference_name ~{reference_name} \
                 --primer_bed ~{primer_bed} 
     >>>
 
