@@ -106,7 +106,7 @@ workflow h5_assembly_analysis {
                     primer_samples = primer_samples,
                     cleaned_PE1 = p_sub.cleaned_PE1,
                     cleaned_PE2 = p_sub.cleaned_PE2,
-                    fastqc_clean_summary_metrics = p_sub.fastqc_clean_summary_metrics,
+                    reads_qc_summary = p_sub.fastqc_summary,
                     primer_bed = ps.bed,
                     ivar_docker = ivar_docker,
                     multiqc_docker = multiqc_docker,
