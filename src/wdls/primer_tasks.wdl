@@ -126,7 +126,7 @@ task fastqc {
     String fastq2_name = basename(fastq2, ".fastq.gz")
     String fastq1_data_name = "~{fastq1_name}_fastqc_data.txt"
     String fastq2_data_name = "~{fastq2_name}_fastqc_data.txt"
-    String summary_metrics_fn = "~{sample_name}_~{fastq_type}_summary_metrics.tsv"
+    String summary_metrics_fn = "~{sample_name}_~{fastq_type}_summary_metrics.csv"
 
     command <<<
         fastqc --outdir $PWD --extract --delete ~{fastq1} ~{fastq2}
