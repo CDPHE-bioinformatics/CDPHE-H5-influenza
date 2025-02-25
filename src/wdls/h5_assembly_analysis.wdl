@@ -27,7 +27,7 @@ workflow h5_assembly_analysis {
     String multiqc_docker = 'multiqc/multiqc:v1.24'
     String jammy_docker = 'ubuntu:jammy-20240627.1'
     String utility_docker = 'theiagen/utility:1.0'
-    String h5_docker = 'ariannaesmith/cdphe_h5_influenza:latest'
+    String h5_docker = 'ariannaesmith/cdphe_h5_influenza:v0.1.0-beta'
     String version_capture_docker = 'ariannaesmith/cdphe_wdl_version_capture:latest'
     
     String workflow_name = 'h5_assembly_analysis'
