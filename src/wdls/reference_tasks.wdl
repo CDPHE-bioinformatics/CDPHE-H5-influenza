@@ -20,6 +20,12 @@ workflow reference_level_tasks {
         String h5_docker
     }
 
+    call sort_bed {
+        input: 
+            primer_bed = primer_bed,
+            docker = h5_docker
+    }
+
     scatter (n in num_samples) {
         Sample sample = primer_samples[n]
         String sample_name = sample.name
@@ -36,18 +42,18 @@ workflow reference_level_tasks {
                 docker = ivar_docker
         }  
 
-        call trim_primers_ivar {
+        call trim_primers_samtools {
             input: 
                 sample_name = sample_name,
                 bam = align_bwa.bam,
-                primer_bed = primer_bed,
+                sorted_bed = sort_bed.sorted_bed,
                 docker = ivar_docker
         }
 
         call generate_consensus_ivar {
             input: 
                 sample_name = sample_name,
-                trim_sort_bam = trim_primers_ivar.trim_sort_bam,
+                trim_sort_bam = trim_primers_samtools.trim_sort_bam,
                 reference_fasta = reference_fasta,
                 docker = ivar_docker
         }   
@@ -55,7 +61,7 @@ workflow reference_level_tasks {
         call alignment_metrics_samtools {
             input:
                 sample_name = sample_name,
-                trim_sort_bam = trim_primers_ivar.trim_sort_bam,
+                trim_sort_bam = trim_primers_samtools.trim_sort_bam,
                 docker = ivar_docker
         }
 
@@ -77,7 +83,7 @@ workflow reference_level_tasks {
 
     call ot.multiqc as multiqc_samtools {
         input:
-            files = flatten([trim_primers_ivar.idxstats, alignment_metrics_samtools.coverage, alignment_metrics_samtools.stats]),
+            files = flatten([trim_primers_samtools.idxstats, alignment_metrics_samtools.coverage, alignment_metrics_samtools.stats]),
             module = "samtools",
             task_name = "alignment",
             cl_config = "extra_fn_clean_exts: [ '_coverage', '_stats']",
@@ -85,7 +91,7 @@ workflow reference_level_tasks {
     }
     
     # Transfer reference level files
-    Array[File] alignment_output = flatten([trim_primers_ivar.trim_sort_bam, trim_primers_ivar.trim_sort_bai])
+    Array[File] alignment_output = flatten([trim_primers_samtools.trim_sort_bam, trim_primers_samtools.trim_sort_bai])
     Array[File] consensus_output = generate_consensus_ivar.consensus_fasta
     Array[File] samtools_output = flatten([alignment_metrics_samtools.coverage, 
                                             alignment_metrics_samtools.stats])
@@ -167,31 +173,68 @@ task align_bwa {
     }
 }
 
-task trim_primers_ivar {
+
+task sort_bed {
     input {
-        String sample_name
-        File bam
         File primer_bed
         String docker
     }
 
+    String out_fn = basename(primer_bed, ".bed") + "_sorted.bed"
+
+    command <<<
+        sort_bed.py --bed_file ~{primer_bed} --out_fn ~{out_fn}
+    >>>
+
+    output {
+        File sorted_bed = out_fn
+    }
+
+    runtime {
+        docker: docker
+    }
+}
+
+task trim_primers_samtools {
+    input {
+        String sample_name
+        File sorted_bed
+        File bam
+        String docker
+    }
+
     Int dynamic_disk_size = ceil(size(bam, "GiB")) * 2 + 10
-    String trim_fn = "~{sample_name}_trimmed.bam"
+    String aligned_bam_fn = "~{sample_name}.aln.sorted.bam"
+    String trim_bam_fn = "~{sample_name}_trimmed.bam"
     String trim_sort_bam_fn = "~{sample_name}_trimmed.sorted.bam"
     String trim_sort_bai_fn = "~{sample_name}_trimmed.sorted.bai"
     String idxstats_fn = "~{sample_name}_trimmed_sorted_idxstats.txt"
-    
+
     command <<<
-        ivar trim -e -i ~{bam} -b ~{primer_bed} -p ~{trim_fn}
-        samtools sort -@ 4 -o ~{trim_sort_bam_fn} ~{trim_fn}
-        samtools index -@ 4 ~{trim_sort_bam_fn} -o ~{trim_sort_bai_fn}
+        bam=~{bam}
+        sn_segments=$(samtools view -H $bam | grep '^@SQ' | cut -f 2)
+        segments=$(for s in ${sn_segments}; do echo "${s#SN:}"; done)
+        bed_segments=$(cat AVRL_H5N1_250bpAmpWGS_primer_v2_sorted.bed  | cut -f 1 | uniq)
+
+        for elem in ${segments[@]}; do 
+            if [[ " ${bed_segments[*]} " =~ [[:space:]]${elem}[[:space:]] ]]; then 
+                echo "${elem} found in bed file"
+            else
+                echo "The reference ${elem} from the sample's BAM file count not be matched in the BED file"
+                exit 1
+            fi
+        done
+
+        samtools ampliconclip --both-ends -b ~{sorted_bed} -o ~{trim_bam_fn} ~{aligned_bam_fn}
+        samtools sort ~{trim_bam_fn} -o {trim_sort_bam_fn}
+        samtools index ~{trim_sort_bam_fn}
         samtools idxstats ~{trim_sort_bam_fn} > ~{idxstats_fn}
     >>>
 
     output {
         File trim_sort_bam = trim_sort_bam_fn
         File trim_sort_bai = trim_sort_bai_fn
-        File idxstats = idxstats_fn        
+        File idxstats = idxstats_fn 
     }
 
     runtime {
