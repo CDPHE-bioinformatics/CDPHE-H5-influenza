@@ -213,7 +213,7 @@ task trim_primers_samtools {
     command <<<
         bam=~{bam}
         sn_segments=$(samtools view -H $bam | grep '^@SQ' | cut -f 2)
-        segments=$(for s in ${sn_segments}; do echo "${s#SN:}"; done)
+        segments=$(for s in ${sn_segments}; do echo "${s#SN:}"; done) # test this bash line again
         bed_segments=$(cat AVRL_H5N1_250bpAmpWGS_primer_v2_sorted.bed  | cut -f 1 | uniq)
 
         for elem in ${segments[@]}; do 
@@ -257,16 +257,34 @@ task generate_consensus_ivar {
     Int dynamic_disk_size = ceil(size(trim_sort_bam, "GiB")) * 2 + 10
     String pileup_fn = "~{sample_name}_pileup.txt"
     String consensus_fn_prefix = "~{sample_name}_consensus"
+    String consensus_fn = consensus_fn_prefix + ".fa"
 
     command <<<
         samtools faidx ~{reference_fasta}
         samtools mpileup -A -aa -d 600000 -B -Q 20 -q 20 -f ~{reference_fasta} ~{trim_sort_bam} -o ~{pileup_fn}
-        cat ~{pileup_fn} | ivar consensus -p ~{consensus_fn_prefix} -q 20 -t 0.6 -m 10
+
+        num_records=$(grep -c ">" $reference_fasta)
+        if (( num_records > 1 )); then  # generate a consensus fasta for each segment and then concatenate into multifasta
+            awk -F '|' '/^>/ {close(F); ID=$1; gsub("^>", "", ID); gsub(" $", "", ID); F=ID".fasta"; array+="$ID"} {print > F}' ~{reference_fasta}
+            rm ~{reference_fasta}
+            files=(*.fasta)
+            for filename in {files[@]}; do
+                segment_id="${filename%'.fasta'}"
+                prefix="~{sample_name}_${segment_id}_consensus"
+                cat ~{pileup_fn} | grep ${segment_id} | ivar consensus -p ${prefix} -q 20 -t 0.6 -m 10
+            fi
+
+            cat (*consensus.fasta) > ~{consensus_fn}
+        else
+            cat ~{pileup_fn} | ivar consensus -p ~{consensus_fn_prefix} -q 20 -t 0.6 -m 10
+        fi
+
     >>>
 
     output {
         File pileup = pileup_fn
-        File consensus_fasta = consensus_fn_prefix + ".fa"
+        File consensus_fasta = consensus_fn
+        Array[File]? segment_consensus_fastas = glob("~{sample_name}_*_consensus.fa")
     }
 
     runtime {
