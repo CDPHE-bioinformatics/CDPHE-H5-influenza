@@ -270,7 +270,7 @@ task calculate_alignment_metrics {
         Array[File] consensus_fastas
         Array[File] samtools_coverages
         Array[String] mapped_reads
-        Array[File] reads_qc_summary
+        File reads_qc_summary
         String project_name
         File reference_fasta
         String reference_name
@@ -288,7 +288,7 @@ task calculate_alignment_metrics {
                 --consensus_fastas ~{sep=" " consensus_fastas} \
                 --samtools_coverages ~{sep=" " samtools_coverages} \
                 --mapped_reads ~{sep=" " mapped_reads} \
-                --reads_qc_summary ~{sep=" " reads_qc_summary} \
+                --reads_qc_summary ~{reads_qc_summary} \
                 --project_name ~{project_name} \
                 --reference_fasta ~{reference_fasta} \
                 --reference_name ~{reference_name} \
