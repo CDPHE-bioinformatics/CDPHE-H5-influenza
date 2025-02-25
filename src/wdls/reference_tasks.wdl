@@ -296,8 +296,8 @@ task calculate_alignment_metrics {
     >>>
 
     output {
+        File aln_metrics = "~{project_name}_aligned_metrics_summary.csv"
         File percent_coverage = "~{project_name}_percent_coverage.csv"
-        File aln_metrics = "~{project_name}_aln_metrics_summary.csv"
     }
 
     runtime {
