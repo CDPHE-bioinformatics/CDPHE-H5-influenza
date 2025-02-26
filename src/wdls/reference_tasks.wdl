@@ -211,9 +211,10 @@ task trim_primers_samtools {
 
     command <<<
         bam=~{bam}
+        sorted_bed=~{sorted_bed}
         sn_segments=$(samtools view -H $bam | grep '^@SQ' | cut -f 2)
         segments=$(for s in ${sn_segments}; do echo "${s#SN:}"; done) # test this bash line again
-        bed_segments=$(cat AVRL_H5N1_250bpAmpWGS_primer_v2_sorted.bed  | cut -f 1 | uniq)
+        bed_segments=$(cat ${sorted_bed} | cut -f 1 | uniq)
 
         for elem in ${segments[@]}; do 
             if [[ " ${bed_segments[*]} " =~ [[:space:]]${elem}[[:space:]] ]]; then 
