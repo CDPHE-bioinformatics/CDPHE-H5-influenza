@@ -45,7 +45,7 @@ workflow reference_level_tasks {
         call trim_primers_samtools {
             input: 
                 sample_name = sample_name,
-                bam = align_bwa.bam,
+                aligned_bam = align_bwa.bam,
                 sorted_bed = sort_bed.sorted_bed,
                 docker = ivar_docker
         }
@@ -198,12 +198,11 @@ task trim_primers_samtools {
     input {
         String sample_name
         File sorted_bed
-        File bam
+        File aligned_bam
         String docker
     }
 
     Int dynamic_disk_size = ceil(size(bam, "GiB")) * 2 + 10
-    String aligned_bam_fn = "~{sample_name}.aln.sorted.bam"
     String trim_bam_fn = "~{sample_name}_trimmed.bam"
     String trim_sort_bam_fn = "~{sample_name}_trimmed.sorted.bam"
     String trim_sort_bai_fn = "~{sample_name}_trimmed.sorted.bai"
@@ -225,7 +224,7 @@ task trim_primers_samtools {
             fi
         done
 
-        samtools ampliconclip --both-ends -b ~{sorted_bed} -o ~{trim_bam_fn} ~{aligned_bam_fn}
+        samtools ampliconclip --both-ends -b ~{sorted_bed} -o ~{trim_bam_fn} ~{aligned_bam}
         samtools sort ~{trim_bam_fn} -o {trim_sort_bam_fn}
         samtools index ~{trim_sort_bam_fn}
         samtools idxstats ~{trim_sort_bam_fn} > ~{idxstats_fn}
