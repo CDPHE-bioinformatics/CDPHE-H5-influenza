@@ -202,16 +202,16 @@ task trim_primers_samtools {
         String docker
     }
 
-    Int dynamic_disk_size = ceil(size(bam, "GiB")) * 2 + 10
+    Int dynamic_disk_size = ceil(size(aligned_bam, "GiB")) * 2 + 10
     String trim_bam_fn = "~{sample_name}_trimmed.bam"
     String trim_sort_bam_fn = "~{sample_name}_trimmed.sorted.bam"
     String trim_sort_bai_fn = "~{sample_name}_trimmed.sorted.bai"
     String idxstats_fn = "~{sample_name}_trimmed_sorted_idxstats.txt"
 
     command <<<
-        bam=~{bam}
+        aligned_bam=~{aligned_bam}
         sorted_bed=~{sorted_bed}
-        sn_segments=$(samtools view -H $bam | grep '^@SQ' | cut -f 2)
+        sn_segments=$(samtools view -H $aligned_bam | grep '^@SQ' | cut -f 2)
         segments=$(for s in ${sn_segments}; do echo "${s#SN:}"; done) # test this bash line again
         bed_segments=$(cat ${sorted_bed} | cut -f 1 | uniq)
 
