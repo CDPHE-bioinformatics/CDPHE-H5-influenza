@@ -225,7 +225,7 @@ task trim_primers_samtools {
         done
 
         samtools ampliconclip --both-ends -b ~{sorted_bed} -o ~{trim_bam_fn} ~{aligned_bam}
-        samtools sort ~{trim_bam_fn} -o {trim_sort_bam_fn}
+        samtools sort ~{trim_bam_fn} -o ~{trim_sort_bam_fn}
         samtools index ~{trim_sort_bam_fn}
         samtools idxstats ~{trim_sort_bam_fn} > ~{idxstats_fn}
     >>>
