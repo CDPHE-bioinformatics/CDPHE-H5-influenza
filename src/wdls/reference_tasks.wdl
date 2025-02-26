@@ -263,18 +263,18 @@ task generate_consensus_ivar {
         samtools faidx ~{reference_fasta}
         samtools mpileup -A -aa -d 600000 -B -Q 20 -q 20 -f ~{reference_fasta} ~{trim_sort_bam} -o ~{pileup_fn}
 
+        reference_fasta=~{reference_fasta}
         num_records=$(grep -c ">" $reference_fasta)
-        if (( num_records > 1 )); then  # generate a consensus fasta for each segment and then concatenate into multifasta
+        if (( num_records > 1 )); then 
             awk -F '|' '/^>/ {close(F); ID=$1; gsub("^>", "", ID); gsub(" $", "", ID); F=ID".fasta"; array+="$ID"} {print > F}' ~{reference_fasta}
             rm ~{reference_fasta}
             files=(*.fasta)
-            for filename in {files[@]}; do
+            for filename in "${files[@]}"; do
                 segment_id="${filename%'.fasta'}"
                 prefix="~{sample_name}_${segment_id}_consensus"
                 cat ~{pileup_fn} | grep ${segment_id} | ivar consensus -p ${prefix} -q 20 -t 0.6 -m 10
-            fi
-
-            cat (*consensus.fasta) > ~{consensus_fn}
+            done
+            cat *consensus.fa > ~{consensus_fn}
         else
             cat ~{pileup_fn} | ivar consensus -p ~{consensus_fn_prefix} -q 20 -t 0.6 -m 10
         fi
