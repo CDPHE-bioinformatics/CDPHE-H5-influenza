@@ -173,7 +173,6 @@ task align_bwa {
     }
 }
 
-
 task sort_bed {
     input {
         File primer_bed
