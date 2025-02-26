@@ -58,7 +58,7 @@ workflow reference_level_tasks {
                 docker = ivar_docker
         }   
 
-        call alignment_metrics_samtools {
+        call calculate_metrics_samtools {
             input:
                 sample_name = sample_name,
                 trim_sort_bam = trim_primers_samtools.trim_sort_bam,
@@ -71,8 +71,8 @@ workflow reference_level_tasks {
         input:
             sample_names = sample_name,
             consensus_fastas = generate_consensus_ivar.consensus_fasta,
-            samtools_coverages = alignment_metrics_samtools.coverage,
-            mapped_reads = alignment_metrics_samtools.mapped_reads,
+            samtools_coverages = calculate_metrics_samtools.coverage,
+            mapped_reads = calculate_metrics_samtools.mapped_reads,
             reads_qc_summary = reads_qc_summary,
             project_name  = project_name,
             reference_fasta = reference_fasta,
@@ -83,7 +83,7 @@ workflow reference_level_tasks {
 
     call ot.multiqc as multiqc_samtools {
         input:
-            files = flatten([trim_primers_samtools.idxstats, alignment_metrics_samtools.coverage, alignment_metrics_samtools.stats]),
+            files = flatten([trim_primers_samtools.idxstats, calculate_metrics_samtools.coverage, calculate_metrics_samtools.stats]),
             module = "samtools",
             task_name = "alignment",
             cl_config = "extra_fn_clean_exts: [ '_coverage', '_stats']",
@@ -93,8 +93,8 @@ workflow reference_level_tasks {
     # Transfer reference level files
     Array[File] alignment_output = flatten([trim_primers_samtools.trim_sort_bam, trim_primers_samtools.trim_sort_bai])
     Array[File] consensus_output = generate_consensus_ivar.consensus_fasta
-    Array[File] samtools_output = flatten([alignment_metrics_samtools.coverage, 
-                                            alignment_metrics_samtools.stats])
+    Array[File] samtools_output = flatten([calculate_metrics_samtools.coverage, 
+                                            calculate_metrics_samtools.stats])
     Array[File] summary_output = [multiqc_samtools.html_report, 
                                     calculate_alignment_metrics.percent_coverage,
                                     calculate_alignment_metrics.aln_metrics]
@@ -295,7 +295,7 @@ task generate_consensus_ivar {
     }
 }
 
-task alignment_metrics_samtools {
+task calculate_metrics_samtools {
     input {
         String sample_name
         File trim_sort_bam
