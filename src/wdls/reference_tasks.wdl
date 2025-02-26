@@ -205,7 +205,7 @@ task trim_primers_samtools {
     Int dynamic_disk_size = ceil(size(aligned_bam, "GiB")) * 2 + 10
     String trim_bam_fn = "~{sample_name}_trimmed.bam"
     String trim_sort_bam_fn = "~{sample_name}_trimmed.sorted.bam"
-    String trim_sort_bai_fn = "~{sample_name}_trimmed.sorted.bai"
+    String trim_sort_bai_fn = trim_sort_bam_fn + ".bam"
     String idxstats_fn = "~{sample_name}_trimmed_sorted_idxstats.txt"
 
     command <<<
