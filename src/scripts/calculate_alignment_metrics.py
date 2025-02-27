@@ -27,43 +27,45 @@ def calculate_reference_lengths(reference_sequence_path, bed_df):
     """Calculate reference segment lengths with and without primers"""
 
     records = list(SeqIO.parse(reference_sequence_path, 'fasta'))
-    reference_lengths  = {}
+    segment_lengths  = {}
     for segment in records:
         total_length = len(segment.seq)
         segment_bed_df = bed_df[bed_df[0] == segment.id]
         if segment_bed_df.empty:
             raise ValueError(f'Reference {segment.id} not found in BED')
         primer_insert_length = segment_bed_df[1].max() - segment_bed_df[2].min()
-        reference_lengths [segment.id] = [total_length, primer_insert_length]
-    
-    total_length = sum(i for i, j in reference_lengths.values())
-    primer_insert_length = sum(j for i, j in reference_lengths.values())
+        segment_lengths[segment.id] = [total_length, primer_insert_length]
 
-    return total_length, primer_insert_length 
+    return segment_lengths 
 
 
 def parse_consensus(row):
     """Parse consensus fasta for various metrics."""
 
-    record = SeqIO.read(row.consensus, 'fasta')
+    records = list(SeqIO.parse(row.consensus, 'fasta'))
+    record = records[row.record_id]
     seq_len = len(record.seq)
     number_ns = record.seq.count('N')
 
     # Count N's in front and back of sequence
     seq_str = str(record.seq)
-    front_ns = len(re.findall('^N+', seq_str)[0]) if re.search('^N+', seq_str) else 0
-    back_ns = len(re.findall('N+$', seq_str)[0]) if re.search('N+$', seq_str) else 0
+    front_ns = len(seq_str) - len(seq_str.lstrip('N'))
+    back_ns = len(seq_str) - len(seq_str.rstrip('N'))
 
     return [seq_len, number_ns, front_ns, back_ns]
 
 
 # Function to gather percent coverage dataframes for all samples and references
-def calculate_percent_coverage(args, total_reference_length, primer_insert_length):
+def calculate_percent_coverage(args, segment_lengths):
     """Calculate percent coverages and other metrics from consensus fastas."""
 
     df = pd.DataFrame(data = {'sample_name': args.sample_names, 
                               'consensus': args.consensus_fastas, 
-                              'reference': args.reference_name})
+                              'reference': args.reference_name,
+                              'record_id': segment_lengths.keys(),
+                              'record_lengths': segment_lengths.values()})
+    df = df.explode(['record_id', 'record_lengths'])
+
     df[['aligned_bases', 'ambiguous_bases', 'front_ns', 'back_ns', ]] = \
         df.apply(lambda x: parse_consensus(x), axis = 1, result_type = 'expand')
     df['aligned_nonambiguous_bases'] = df.aligned_bases - df.ambiguous_bases
@@ -80,6 +82,7 @@ def calculate_percent_coverage(args, total_reference_length, primer_insert_lengt
             'project_name', 
             'primer_name',
             'reference', 
+            'record_id',
             'percent_coverage_total_length',
             'percent_coverage_primer_insert_length',
             'aligned_bases',
@@ -154,10 +157,10 @@ def main():
     bed_df = pd.read_csv(args.primer_bed, sep='\t', header=None)
 
     # Load reference lengths using the BED file and reference sequences
-    total_reference_length, primer_insert_length = calculate_reference_lengths(args.reference_fasta, bed_df)
+    segment_lengths = calculate_reference_lengths(args.reference_fasta, bed_df)
 
     # Calculate and save percent coverage
-    concat_percent_coverage_df = calculate_percent_coverage(args, total_reference_length, primer_insert_length)
+    concat_percent_coverage_df = calculate_percent_coverage(args, segment_lengths)
     concat_percent_coverage_df.to_csv(f'{args.project_name}_percent_coverage.csv', index=False)
 
     # Calculate and save coverage summaries
