@@ -43,11 +43,15 @@ def parse_consensus(row):
 
     records = list(SeqIO.parse(row.consensus, 'fasta'))
     record_ids = [r.id for r in records]
-    try:
-        record_idx = [row.record_id in r for r in record_ids].index(True)
-    except ValueError:
-        print(f'{row.record_id} could not be found in the consensus fasta record ids:')
-        print(record_ids, sep = '\n')
+    if len(record_ids) == 1:
+        record_idx = 0
+    else:
+        try:
+            record_idx = [row.record_id in r for r in record_ids].index(True)
+        except ValueError:
+            print(f'{row.record_id} could not be found in the consensus fasta record ids:')
+            print(record_ids, sep = '\n')
+            sys.exit(1)
     
     record = records[record_idx]
     seq_len = len(record.seq)
