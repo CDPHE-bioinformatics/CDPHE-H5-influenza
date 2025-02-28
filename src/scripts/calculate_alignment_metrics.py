@@ -10,16 +10,17 @@ from Bio import SeqIO
 
 def get_args():
     parser = argparse.ArgumentParser(description='Calculate alignment metrics and percent coverage.')
-    parser.add_argument('--sample_names', nargs='+', help='List of sample names')
     parser.add_argument('--consensus_fastas', nargs='+', help='List of consensus FASTA files')
-    parser.add_argument('--samtools_coverages', nargs='+', help='List of samtools coverage.txt files')
-    parser.add_argument('--reads_qc_summary', help='Concatenated fastQC summary file')
+    parser.add_argument('--out_fn_prefix', help = 'Out filename prefix')
+    parser.add_argument('--primer_bed', help='BED file with primer information')
     parser.add_argument('--project_name', help='Name of the project')
+    parser.add_argument('--reads_qc_summary', help='Concatenated fastQC summary file')
     parser.add_argument('--reference_fasta', help='Reference FASTA file')
     parser.add_argument('--reference_name', help='Reference FASTA name')
-    parser.add_argument('--primer_bed', help='BED file with primer information')
-
+    parser.add_argument('--sample_names', nargs='+', help='List of sample names')
+    parser.add_argument('--samtools_coverages', nargs='+', help='List of samtools coverage.txt files')
     return parser.parse_args()
+
 
 
 def calculate_reference_lengths(reference_sequence_path, bed_df):
@@ -244,11 +245,11 @@ def main():
 
     # Calcuate segmented metrics
     segmented_df = calculate_segment_stats(args, segment_lengths)
-    segmented_df.to_csv(f'{args.project_name}_segment_metrics.csv', index=False)
+    segmented_df.to_csv(f'{args.out_fn_prefix}_segment_metrics.csv', index=False)
 
     # Calculate overall sample metrics
     sample_df = calculate_sample_stats(segmented_df, args)
-    sample_df.to_csv(f'{args.project_name}_sample_metrics.csv', index=False)
+    sample_df.to_csv(f'{args.out_fn_prefix}_sample_metrics.csv', index=False)
 
 if __name__ == "__main__":
     main()

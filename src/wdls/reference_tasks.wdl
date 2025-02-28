@@ -14,6 +14,7 @@ workflow reference_level_tasks {
         Array[File] cleaned_PE2
         File reads_qc_summary
         File primer_bed
+        String primer_name
         String ivar_docker
         String multiqc_docker
         String utility_docker
@@ -77,6 +78,7 @@ workflow reference_level_tasks {
             reference_fasta = reference_fasta,
             reference_name = reference_name,
             primer_bed = primer_bed,
+            primer_name = primer_name,
             docker = h5_docker
     }
 
@@ -325,14 +327,15 @@ task calculate_metrics_samtools {
 
 task calculate_alignment_metrics {
     input {
-        Array[String] sample_names
         Array[File] consensus_fastas
-        Array[File] samtools_coverages
-        File reads_qc_summary
+        File primer_bed
+        String primer_name
         String project_name
+        File reads_qc_summary
         File reference_fasta
         String reference_name
-        File primer_bed
+        Array[String] sample_names
+        Array[File] samtools_coverages
         String docker
     }
 
@@ -340,21 +343,24 @@ task calculate_alignment_metrics {
         volatile: true
     }
 
+    String out_fn_prefix = "~{project_name}_~{primer_name}"
+
     command <<<
         calculate_alignment_metrics.py \
-                --sample_names ~{sep=" " sample_names} \
                 --consensus_fastas ~{sep=" " consensus_fastas} \
+                --out_fn_prefix ~{out_fn_prefix}
+                --primer_bed ~{primer_bed} 
+                --project_name ~{project_name} \
+                --sample_names ~{sep=" " sample_names} \
                 --samtools_coverages ~{sep=" " samtools_coverages} \
                 --reads_qc_summary ~{reads_qc_summary} \
-                --project_name ~{project_name} \
                 --reference_fasta ~{reference_fasta} \
                 --reference_name ~{reference_name} \
-                --primer_bed ~{primer_bed} 
     >>>
 
     output {
-        File segment_metrics = "~{project_name}_segment_metrics.csv"
-        File sample_metrics = "~{project_name}_sample_metrics.csv"
+        File segment_metrics = "~{out_fn_prefix}_segment_metrics.csv"
+        File sample_metrics = "~{out_fn_prefix}_sample_metrics.csv"
     }
 
     runtime {

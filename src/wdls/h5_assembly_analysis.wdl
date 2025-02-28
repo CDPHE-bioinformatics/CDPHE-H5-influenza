@@ -108,6 +108,7 @@ workflow h5_assembly_analysis {
                     cleaned_PE2 = p_sub.cleaned_PE2,
                     reads_qc_summary = p_sub.fastqc_summary,
                     primer_bed = ps.bed,
+                    primer_name = primer_name,
                     ivar_docker = ivar_docker,
                     multiqc_docker = multiqc_docker,
                     utility_docker = utility_docker,
