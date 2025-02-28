@@ -137,10 +137,10 @@ def average_samtools_coverages(df):
                                 'avg_map_quality': weighted_mean_map_quality})
     else:
         ser = (df[['percent_coverage_total_length', 'mean_depth', 'mean_map_quality']]
-               .squeeze(axis = 0)
                .rename(columns = {'percent_coverage_total_length': 'avg_percent_coverage',
                                   'mean_depth': 'avg_depth', 
                                   'mean_map_quality': 'avg_map_quality'})
+               .squeeze(axis = 0)
         )
     
     return ser
