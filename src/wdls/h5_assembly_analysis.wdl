@@ -116,6 +116,22 @@ workflow h5_assembly_analysis {
         }
     }
 
+    call ot.concat_all_samples_metrics as concat_metrics {
+        input:
+            project_name = project_name,
+            segment_metrics_files = select_all(r_sub.segment_metrics_file),
+            sample_metrics_files = select_all(r_sub.sample_metrics_file),
+            docker = jammy_docker
+    }
+
+    call ot.transfer as transfer_concat_metrics {
+        input:
+            out_dir = project_outdir,
+            task_dir = 'summary_results',
+            task_files = [concat_metrics.segment_summary, concat_metrics.sample_summary],
+            docker = utility_docker
+    }
+
     # Collect various version information
     VersionInfo fastqc_version = select_first(p_sub.fastqc_version)
     VersionInfo fastp_version = select_first(p_sub.fastp_version)
@@ -155,6 +171,7 @@ workflow h5_assembly_analysis {
         Array[Array[File]] primers_alignment_outputs = select_all(r_sub.alignment_outputs)
         Array[Array[File]] primers_consensus_outputs = select_all(r_sub.consensus_outputs)
         Array[Array[File]] primers_ref_summary_outputs = select_all(r_sub.summary_outputs)
+        Array[File] concatenated_summary_outputs = [concat_metrics.segment_summary, concat_metrics.sample_summary]
         Array[VersionInfo] version_capture = version_array
     }    
 }

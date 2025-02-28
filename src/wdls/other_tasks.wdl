@@ -59,21 +59,28 @@ task multiqc {
 
 task concat_all_samples_metrics {
     input {
+        String project_name
+        Array[File] segment_metrics_files
         Array[File] sample_metrics_files
         String docker
     }
 
+    String segment_concat_fn = "~{project_name}_segment_metrics_summary.csv"
+    String sample_concat_fn = "~{project_name}_sample_metrics_summary.csv"
+
     command <<<
-        # python stuff
+        segment_files=~{sep=" " segment_metrics_files}
+        sample_files=~{sep=" " sample_metrics_files}
+        awk 'NR==1||FNR>1' ${segment_files[@]} > ~{segment_concat_fn}
+        awk 'NR==1||FNR>1' ${sample_metrics_files[@]} > ~{sample_concat_fn}
     >>>
 
     output {
-        File samples_metrics = "summary_metrics.csv"
+        File segment_summary = segment_concat_fn
+        File sample_summary = sample_concat_fn
     }
 
     runtime {
-        #cpu: 
-        #memory: 
         docker: docker
     }
 }

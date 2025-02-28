@@ -117,7 +117,9 @@ workflow reference_level_tasks {
         VersionInfo ivar_version = select_first(align_bwa.ivar_version_info)
         Array[File] alignment_outputs = alignment_output
         Array[File] consensus_outputs = consensus_output
-        Array[File] summary_outputs = summary_output   
+        Array[File] summary_outputs = [calculate_alignment_metrics.segment_metrics, calculate_alignment_metrics.sample_metrics, multiqc_samtools.html_report]
+        File segment_metrics_file = calculate_alignment_metrics.segment_metrics
+        File sample_metrics_file = calculate_alignment_metrics.sample_metrics
     }
 }
 
