@@ -72,7 +72,6 @@ workflow reference_level_tasks {
             sample_names = sample_name,
             consensus_fastas = generate_consensus_ivar.consensus_fasta,
             samtools_coverages = calculate_metrics_samtools.coverage,
-            mapped_reads = calculate_metrics_samtools.mapped_reads,
             reads_qc_summary = reads_qc_summary,
             project_name  = project_name,
             reference_fasta = reference_fasta,
@@ -96,8 +95,8 @@ workflow reference_level_tasks {
     Array[File] samtools_output = flatten([calculate_metrics_samtools.coverage, 
                                             calculate_metrics_samtools.stats])
     Array[File] summary_output = [multiqc_samtools.html_report, 
-                                    calculate_alignment_metrics.percent_coverage,
-                                    calculate_alignment_metrics.aln_metrics]
+                                    calculate_alignment_metrics.segment_metrics,
+                                    calculate_alignment_metrics.sample_metrics]
     
     Array[String] reference_task_dirs = ["alignments", "assemblies", "samtools", "summary_results"]
     Array[Array[File]] reference_task_files = [alignment_output, consensus_output, samtools_output, summary_output]
@@ -308,13 +307,11 @@ task calculate_metrics_samtools {
     command <<<
         samtools coverage -o ~{coverage_fn} ~{trim_sort_bam}
         samtools stats ~{trim_sort_bam} > ~{stats_fn}
-        grep "reads mapped:" ~{stats_fn} | cut -f 3 >> MAPPED_READS
     >>>
 
     output {
         File coverage = coverage_fn
         File stats = stats_fn
-        String mapped_reads = read_string('MAPPED_READS')
     }
 
     runtime {
@@ -329,7 +326,6 @@ task calculate_alignment_metrics {
         Array[String] sample_names
         Array[File] consensus_fastas
         Array[File] samtools_coverages
-        Array[String] mapped_reads
         File reads_qc_summary
         String project_name
         File reference_fasta
@@ -347,7 +343,6 @@ task calculate_alignment_metrics {
                 --sample_names ~{sep=" " sample_names} \
                 --consensus_fastas ~{sep=" " consensus_fastas} \
                 --samtools_coverages ~{sep=" " samtools_coverages} \
-                --mapped_reads ~{sep=" " mapped_reads} \
                 --reads_qc_summary ~{reads_qc_summary} \
                 --project_name ~{project_name} \
                 --reference_fasta ~{reference_fasta} \
@@ -356,8 +351,8 @@ task calculate_alignment_metrics {
     >>>
 
     output {
-        File aln_metrics = "~{project_name}_aligned_metrics_summary.csv"
-        File percent_coverage = "~{project_name}_percent_coverage.csv"
+        File segment_metrics = "~{project_name}_segment_metrics.csv"
+        File sample_metrics = "~{project_name}_sample_metrics.csv"
     }
 
     runtime {
