@@ -19,7 +19,7 @@ workflow primer_level_tasks {
         String sample_name = sample.name
         String fastq_raw = "raw"
         String fastq_clean = "clean"
-        # Call sample level tasks
+
         call fastqc as fastqc_raw {
             input: 
                 sample_name = sample_name,
@@ -31,7 +31,6 @@ workflow primer_level_tasks {
                 docker = fastqc_docker
         }
         
-
         call fastp {
             input:
                 sample = sample,
@@ -60,7 +59,6 @@ workflow primer_level_tasks {
             docker = h5_docker
     }
 
-    # Call multiqc
     call ot.multiqc as multiqc_fastqc {
         input:
             files = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data,
