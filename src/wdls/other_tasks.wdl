@@ -69,10 +69,8 @@ task concat_all_samples_metrics {
     String sample_concat_fn = "~{project_name}_sample_metrics_summary.csv"
 
     command <<<
-        segment_files=~{sep=" " segment_metrics_files}
-        sample_files=~{sep=" " sample_metrics_files}
-        awk 'NR==1||FNR>1' ${segment_files[@]} > ~{segment_concat_fn}
-        awk 'NR==1||FNR>1' ${sample_metrics_files[@]} > ~{sample_concat_fn}
+        awk 'NR==1||FNR>1' ~{sep=" " segment_metrics_files} > ~{segment_concat_fn}
+        awk 'NR==1||FNR>1' ~{sep=" " sample_metrics_files}> ~{sample_concat_fn}
     >>>
 
     output {
