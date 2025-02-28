@@ -348,8 +348,8 @@ task calculate_alignment_metrics {
     command <<<
         calculate_alignment_metrics.py \
                 --consensus_fastas ~{sep=" " consensus_fastas} \
-                --out_fn_prefix ~{out_fn_prefix}
-                --primer_bed ~{primer_bed} 
+                --out_fn_prefix ~{out_fn_prefix} \
+                --primer_bed ~{primer_bed} \
                 --project_name ~{project_name} \
                 --sample_names ~{sep=" " sample_names} \
                 --samtools_coverages ~{sep=" " samtools_coverages} \
