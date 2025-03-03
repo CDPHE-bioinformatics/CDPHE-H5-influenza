@@ -1,10 +1,10 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36" version="24.7.17">
   <diagram id="6a731a19-8d31-9384-78a2-239565b7b9f0" name="Page-1">
-    <mxGraphModel dx="1597" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1200" background="none" math="0" shadow="0">
+    <mxGraphModel dx="1730" dy="1083" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1200" background="none" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="PwvHuBpC1ZCdnmNJ7vxb-442" value="Per workflow instance" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[1,1,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];rounded=1;absoluteArcSize=1;arcSize=2;html=1;strokeColor=#0e8088;shadow=1;dashed=0;fontSize=12;align=left;verticalAlign=top;spacing=10;spacingTop=-4;whiteSpace=wrap;fillColor=#84ced2;" vertex="1" parent="1">
+        <mxCell id="PwvHuBpC1ZCdnmNJ7vxb-442" value="Per workflow instance" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[1,1,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];rounded=1;absoluteArcSize=1;arcSize=2;html=1;strokeColor=#188c9c;shadow=1;dashed=0;fontSize=12;align=left;verticalAlign=top;spacing=10;spacingTop=-4;whiteSpace=wrap;fillColor=#84ced2;" vertex="1" parent="1">
           <mxGeometry x="240" y="80" width="1400" height="1190" as="geometry" />
         </mxCell>
         <mxCell id="PwvHuBpC1ZCdnmNJ7vxb-362" value="&lt;font color=&quot;#1a1a1a&quot;&gt;Per primer&lt;/font&gt;" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[1,1,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];rounded=1;absoluteArcSize=1;arcSize=2;html=1;strokeColor=#a3aaae;gradientColor=none;shadow=1;dashed=0;fontSize=12;fontColor=#9E9E9E;align=left;verticalAlign=top;spacing=10;spacingTop=-4;whiteSpace=wrap;fillColor=#E0F2F1;" vertex="1" parent="1">
@@ -153,7 +153,7 @@
           <mxGeometry x="-120" y="110" width="100" height="60" as="geometry" />
         </mxCell>
         <mxCell id="PwvHuBpC1ZCdnmNJ7vxb-208" value="" style="html=1;shadow=1;dashed=0;shape=mxgraph.bootstrap.rrect;rSize=5;strokeColor=#6c767d;html=1;whiteSpace=wrap;fillColor=#ffffff;fontColor=#1CA5B8;verticalAlign=bottom;align=left;spacing=20;spacingBottom=0;fontSize=14;container=0;" vertex="1" parent="1">
-          <mxGeometry x="670" y="440" width="530" height="210" as="geometry" />
+          <mxGeometry x="660" y="440" width="550" height="210" as="geometry" />
         </mxCell>
         <mxCell id="PwvHuBpC1ZCdnmNJ7vxb-203" value="fastp" style="html=1;shadow=1;dashed=0;shape=mxgraph.bootstrap.rrect;rSize=5;strokeColor=none;strokeWidth=1;fillColor=#1CA5B8;fontColor=#FFFFFF;whiteSpace=wrap;align=center;verticalAlign=middle;spacingLeft=0;fontStyle=1;fontSize=14;spacing=5;container=0;" vertex="1" parent="1">
           <mxGeometry x="710" y="550" width="70" height="30" as="geometry" />
@@ -177,7 +177,7 @@
           <mxGeometry x="825" y="550" width="110" height="30" as="geometry" />
         </mxCell>
         <mxCell id="PwvHuBpC1ZCdnmNJ7vxb-209" value="&lt;font color=&quot;#000000&quot;&gt;Pre-processing and QC&lt;/font&gt;" style="html=1;shadow=1;dashed=0;shape=mxgraph.bootstrap.topButton;rSize=5;perimeter=none;whiteSpace=wrap;fillColor=#F7F7F7;strokeColor=#949ca1;fontColor=#6C767D;resizeWidth=1;fontSize=18;align=center;spacing=20;container=0;" vertex="1" parent="1">
-          <mxGeometry x="670" y="440" width="530" height="40" as="geometry" />
+          <mxGeometry x="660" y="440" width="550" height="40" as="geometry" />
         </mxCell>
         <mxCell id="PwvHuBpC1ZCdnmNJ7vxb-385" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;shadow=1;" edge="1" parent="1" source="PwvHuBpC1ZCdnmNJ7vxb-379" target="PwvHuBpC1ZCdnmNJ7vxb-253">
           <mxGeometry relative="1" as="geometry" />
