@@ -72,6 +72,8 @@ The main workflow, `h5_assembly_analysis`, is a set-level workflow that calls al
 
 ## Docker container
 
+Located at [ariannaesmith/cdphe_h5_influenza](https://hub.docker.com/repository/docker/ariannaesmith/cdphe_h5_influenza/general).
+
 ### Reference data
 
 | Primer bed | Associated reference fasta | Description | Source |
