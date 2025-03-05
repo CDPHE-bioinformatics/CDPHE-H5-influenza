@@ -9,11 +9,11 @@ import "other_tasks.wdl" as ot
 workflow h5_assembly_analysis {
     input {
         Array[String] primers
-        Array[String] samples
+        Array[String] sample_names
         Array[File] fastq1s
         Array[File] fastq2s
         String project_name
-        String gs_dir
+        String out_dir
     }
 
     # private declarations
@@ -30,7 +30,7 @@ workflow h5_assembly_analysis {
     String workflow_version = 'v0.1.0-gamma'
     String workflow_version_und = sub(workflow_version, "\\.", "_")
 
-    Array[Int] indexes = range(length(samples))
+    Array[Int] indexes = range(length(sample_names))
 
     call vc.workflow_metadata as w_meta { 
         input: 
@@ -38,7 +38,7 @@ workflow h5_assembly_analysis {
             workflow_name = workflow_name,
             workflow_version = workflow_version
     }
-    String project_outdir = gs_dir + "/" +  project_name + "/terra_outputs/" + workflow_version_und + "/"
+    String project_outdir = out_dir + "/" +  project_name + "/terra_outputs/" + workflow_version_und + "/"
 
     # Struct initilizations (subworkflow)
     call initializations.declare_structs as ini { input: h5_docker = h5_docker}
@@ -46,7 +46,7 @@ workflow h5_assembly_analysis {
     # Scatter samples to create structs
     scatter (idx in indexes) {
         Sample sample = object {
-            name: samples[idx],
+            name: sample_names[idx],
             primer: primers[idx],
             fastq1: fastq1s[idx],
             fastq2: fastq2s[idx],
@@ -54,11 +54,11 @@ workflow h5_assembly_analysis {
         }
     }
 
-    Array[Sample] all_samples = sample
+    Array[Sample] samples = sample
 
     # Group samples by primer
     scatter (ps in ini.primer_schemes) {
-        scatter (all_samp in all_samples) {
+        scatter (all_samp in samples) {
             if (all_samp.primer == ps.name) {
                 # Only add to list if fastqs are not empty
                 Float fastqs_size = size([all_samp.fastq1, all_samp.fastq2], "MiB")
@@ -113,7 +113,7 @@ workflow h5_assembly_analysis {
         }
     }
 
-    call ot.concat_all_samples_metrics as concat_metrics {
+    call ot.concat_samples_metrics as concat_metrics {
         input:
             project_name = project_name,
             segment_metrics_files = select_all(r_sub.segment_metrics_file),
