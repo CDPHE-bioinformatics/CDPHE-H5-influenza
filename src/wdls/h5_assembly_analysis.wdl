@@ -16,10 +16,6 @@ workflow h5_assembly_analysis {
         String gs_dir
     }
 
-    meta {
-        allowNestedInputs: true
-    }
-
     # private declarations
     String fastqc_docker = 'staphb/fastqc:0.12.1'
     String fastp_docker = 'staphb/fastp:0.23.2'
