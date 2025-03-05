@@ -1,72 +1,91 @@
 # DISCLAIMER
 This repository is in active development and is not yet ready for production use.
 
-## CDPHE-H5-Influenza workflow
+# CDPHE-H5-Influenza workflow
 
-### Disclaimer
+## Disclaimer
 Next generation sequencing and bioinformatic and genomic analysis at the Colorado Department of Public Health and Environment (CDPHE) is not CLIA validated at this time. These workflows and their outputs are not to be used for diagnostic purposes and should only be used for public health action and surveillance purposes. CDPHE is not responsible for the incorrect or inappropriate use of these workflows or their results.
 
-### Overview
+## Overview
 The following documentation describes the Colorado Department of Public Health and Environment's workflows for the assembly and analysis of next genome sequencing data of H5 influenza on GCP's Terra.bio platform. 
 
-The workflow currently allows for various primer schemes and references for alignment. Some are only for the HA gene segment while others are whole genome. See Workspace data below.
+The workflow currently allows for various primer schemes and references for alignment. Some are only for certain gene segments while others are whole genome. See Workspace data below.
 
-The workflow is split into multiple wdl files, but is all launched as one workflow.
+The workflow is split into multiple WDL files, but is all launched as one workflow.
 
-### Files
+## WDL files
 
-#### Subworkflows
+### Main workflow
 
-| Name | Description | Subworkflow/task calls |
+The main workflow, `h5_assembly_analysis`, is a set-level workflow that calls all other subworkflows and tasks.
+
+#### Inputs
+
+| Variable | Type | Description |
+| -- | -- | -- |
+| `fastq1s` | `Array[File]` | R1 fastq files |
+| `fastq2s` | `Array[File]` | R2 fastq files |
+| `out_dir` | `String` | Directory prefix to copy files to |
+| `primers` | `Array[String]` | Primer schemes - names must match those in `structs.wdl` |
+| `project_name` | `String` | Sequencing run name |
+| `sample_names` | `Array[String]` | Sample names - must be unique |
+
+### Subworkflows
+
+| Name | Description | Task definitions |
 | --- | --- | --- |
-| `h5_testing` | The main workflow that calls all other subworkflows and tasks. | `version_capture_tasks.workflow_metadata`<br>`h5_structs.declare_structs`<br>`primer_tasks.primer_level_tasks`<br>`reference_tasks.reference_level_tasks`<br>`version_capture_tasks.capture_versions`<br>`other_tasks.transfer_vc` |
-| `h5_structs` | Contains struct definitions and subworkflow to declare the primer schemes and references structs. | None |
-| `primer_tasks` | Subworkflow and task declarations for primer-level tasks.| `fastqc_raw`<br>`seqyclean`<br>`fastqc_clean`<br>`sample_qc_file`<br>`multiqc_fastqc`<br>`multiqc_seqyclean`<br>`transfer` |
-| `reference_tasks` | Subworkflow and task declarations for reference-level tasks.| `align_bwa`<br>`trim_primers_ivar`<br>`generate_consensus_ivar`<br>`alignment_metrics`<br>`calculate_percent_coverage`<br>`concat_sample_reference_metrics`<br>`multiqc_samtools`<br>`transfer` |
-| `version_capture_tasks` | Task declarations for tool and workflow version capture.| `workflow_metadata`<br>`capture_versions` |
-| `other_tasks` | Task declarations for all other tasks. | `transfer`<br>`multiqc`<br>`concat_all_samples_metrics` |
+| `structs` | Contains struct definitions and subworkflow to download primer schemes structs. | `download_references` |
+| `primer_tasks` | Subworkflow and task declarations for primer-level tasks.| `fastqc`<br>`fastp`<br>`concat_fastqc_summary` |
+| `reference_tasks` | Subworkflow and task declarations for reference-level tasks.| `align_bwa`<br>`calculate_alignment_metrics`<br>`calculate_metrics_samtools`<br>`concat_sample_reference_metrics`<br>`generate_consensus_ivar`<br>`sort_bed`<br>`trim_primers_samtools` |
+| `version_capture_tasks` | Task declarations for tool and workflow version capture.| `capture_versions`<br>`workflow_metadata` |
+| `other_tasks` | Task declarations for tasks used by multiple workflows. | `concat_all_samples_metrics`<br>`multiqc`<br>`transfer` |
 
-### Flow
-Note- Commonly-used inputs such as `sample_name` are not noted below.
-
-- Call `version_capture_tasks.workflow_metadata` task to get the workflow version and analysis date.
-- Call `h5_structs.declare_structs` subworkflow to declare reference and primer scheme struct objects.
-- Scatter samples to create `Sample` struct objects.
+### High-level overview
+- Call `version_capture_tasks.workflow_metadata`
+- Call `structs.declare_structs` subworkflow 
+- Create `Sample` structs.
 - Scatter `PrimerScheme` array.
   - Create primer sample list, excluding those with empty fastq files.
   - Call `primer_tasks.primer_level_tasks` subworkflow
     - Scatter samples
-      - Call `fastqc_raw`. Input - raw fastq files. 
-      - Call `seqyclean`. Input - raw fastq files.
-      - Call `fastqc_clean`. Input - cleaned fastq files from `seqyclean`.
-    - Call `sample_qc_file`. Input - `data.txt` files from `fastqc_raw` and `fastqc_clean`, `SummaryStatistics.txt` from `seqyclean`.
-    - Call `multiqc_fastqc`. Input- `data.txt` files from `fastqc_raw` and `fastqc_clean`.
-    - Call `multiqc_seqyclean`. Input- `SummaryStatistics.txt` files from `seqyclean`.
-    - Call `other_tasks.transfer` task to transfer all primer-level task outputs to their respective directories.
+      - Call `fastqc_raw`
+      - Call `fastp`
+      - Call `fastqc_clean`
+    - Call `concat_fastqc_summary`
+    - Call `multiqc_fastqc`
+    - Call `multiqc_fastp`
+    - Call `other_tasks.transfer`
   - Call `reference_tasks.reference_level_tasks` subworkflow
+    - Call `sort_bed`
     - Scatter samples
-      - Call `align_bwa`. Input - `reference` name and fasta file, cleaned fastq files from `seqyclean`.
-      - Call `trim_primers_ivar`. Input - `bwa` from `align_bwa`, `primer_bed` file
-      - Call `generate_consensus_ivar`. Input - `trimmed.sorted.bam` from `trim_primers_ivar`, `reference` fasta file.
-      - Call `alignment_metrics`. Input - `trimmed.sorted.bam` from `trim_primers_ivar`
-      - Call `calculate_percent_coverage`. Input - {to fill in}
-      - Call `concat_sample_reference_metrics`.  Input - `stats.txt` and `coverage.txt` from `alignment_metrics`, `coverage_stats.csv` from `calculate_percent_coverage`.
-    - Call `multiqc_samtools`. Input - `stats.txt` and `coverage.txt` from `alignment_metrics`.
-    - Call `other_tasks.transfer` task to transfer all reference-level task outputs to their respective directories.
-- Call `version_capture_tasks.capture_versions`. Input:`analysis_date` and `workflow_version` from `workflow_metadata`, `Array[VersionInfo]` objects from all tools used.
-- Call `other_tasks.transfer` task to transfer `version_capture.csv` from `version_capture_tasks.capture_versions`.
+      - Call `align_bwa`
+      - Call `trim_primers_samtools`
+      - Call `generate_consensus_ivar`
+      - Call `calculate_metrics_samtools`
+    - Call `calculate_alignment_metrics`
+    - Call `multiqc_samtools`
+    - Call `other_tasks.transfer`
+- Call `other_tasks.concat_all_samples_metrics`
+- Call `other_tasks.transfer_concat_metrics`
+- Call `version_capture_tasks.capture_versions`
+- Call `other_tasks.transfer_vc` 
 
-### Workspace data
+## Docker container
 
-| Name | Description |
-| -- | -- |
-| `AVRL_H5N1_250bp_bed` | cattle-specific, tiled whole genome |
-| `houston_bed` | Rice, H1, H3, H5, N1, N2 - Olivar (tiled) |
-| `human_h5_200_bed` | cattle-H5-specific, 200bp, tiled HA gene |
-| `human_h5_250_bed` | cattle-H5-specific, 250bp, tiled HA gene |
-| `bovine_texas_029328_01_UtoT_fasta` | Cattle reference, whole genome |
-| `bovine_texas_029328_01_UtoT_ha_fasta` | Cattle reference, HA gene |
-| `darwin_9_2021_h3n2_ha_h3_fasta` | CDC vaccine strain reference for H3N2, HA gene |
-| `victoria_4897_2022_h1n1_ha_h1_fasta` | CDC vaccine strain reference for H1N1, HA gene |
-| `vietnam_1203_2024_h5n1_ha_v2_fasta` | CDC vaccine strain reference for H5N1, HA gene |
-| `contaminants_fasta` | Adapters and contaminants fasta file |
+### Reference data
+
+| Primer bed | Associated reference fasta | Description | Source |
+| -- | -- | -- | -- 
+| `AVRL_H5N1_250bpAmpWGS_primer_v2.bed` | `A_Bovine_Texas_24-029328-01_2024_H5N1_multi.fasta` | Tiled - whole genome - H5N1 | [Paper](dx.doi.org/10.17504/protocols.io.kqdg322kpv25/v1) |
+| `houston_fluA_primer.bed` | `houston_fluA_multi.fasta` | Tiled - HA + NA genes from H5N1 and H3N2; HA gene from H1N1 | [Github repository](https://github.com/treangenlab/InfA-amplicon) |
+| `human_h5_200bp_primer.bed` | `A_Texas_37_2024_H5N1_HA-H5.fasta` | Tiled - HA gene - H5N1 | made in-house  with [PrimalScheme](https://primalscheme.com/) |
+| `human_h5_250bp_primer.bed` | `A_Texas_37_2024_H5N1_HA-H5.fasta` | Tiled - HA gene - H5N1 | made in-house with [PrimalScheme](https://primalscheme.com/) |
+
+
+### Python scripts
+
+| Name | Associated workflow | Description |
+| -- | -- | -- |
+| `calculate_alignment_metrics.py` | `reference_tasks` | Calculate alignment metrics |
+| `concat_fastqc_summary.py` | `primer_tasks` | Calculate QC metrics | 
+| `sort_bed.py` | `reference_tasks` | Sort primer bed file |
