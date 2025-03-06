@@ -113,7 +113,7 @@ workflow h5_assembly_analysis {
         }
     }
 
-    call ot.concat_samples_metrics as concat_metrics {
+    call ot.concat_all_samples_metrics as concat_metrics {
         input:
             project_name = project_name,
             segment_metrics_files = select_all(r_sub.segment_metrics_file),
