@@ -364,8 +364,6 @@ task calculate_alignment_metrics {
     }
 
     runtime {
-        #cpu: 
-        #memory: 
         docker: docker
     }
 }

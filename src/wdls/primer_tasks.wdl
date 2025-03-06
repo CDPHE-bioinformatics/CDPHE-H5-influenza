@@ -161,8 +161,6 @@ task fastqc {
     }
 
     runtime {
-        #cpu: 
-        #memory: 
         docker: docker
     }
 }
@@ -253,8 +251,6 @@ task concat_fastqc_summary {
     }
 
     runtime {
-        #cpu: 
-        #memory: 
         docker: docker
     }
 }

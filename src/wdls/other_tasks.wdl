@@ -15,8 +15,6 @@ task transfer {
     >>>
 
     runtime {
-        #cpu: 
-        #memory: 
         docker: docker
     }
 }
@@ -51,8 +49,6 @@ task multiqc {
     }
 
     runtime {
-        #cpu: 
-        #memory: 
         docker: docker
     }
 }
