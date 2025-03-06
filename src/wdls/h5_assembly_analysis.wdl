@@ -65,6 +65,9 @@ workflow h5_assembly_analysis {
                 if (fastqs_size > 1) {
                     Sample primer_sample = all_samp
                 }
+                else {
+                    Sample empty_sample = all_samp
+                }
             }
         }
         Array[Sample] primer_samples = select_all(primer_sample)
@@ -161,6 +164,7 @@ workflow h5_assembly_analysis {
 
     output { 
         Array[String] primers_used = select_all(primer_name)
+        Array[Array[String]] primers_skipped_empty_samples = select_all(select_all(empty_sample))
         Array[Array[File]] primers_fastqc_raw_outputs = select_all(p_sub.fastqc_raw_outputs)
         Array[Array[File]] primers_fastqc_clean_outputs = select_all(p_sub.fastqc_clean_outputs)
         Array[Array[File]] primers_fastp_outputs = select_all(fastp_output)
