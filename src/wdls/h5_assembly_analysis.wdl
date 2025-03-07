@@ -1,7 +1,7 @@
 version 1.0
 
 import "structs.wdl" as initializations
-import "version_capture_tasks.wdl" as vc
+import "https://github.com/CDPHE-bioinformatics/wdl-shared/blob/main/version_capture_tasks.wdl" as vc
 import "reference_tasks.wdl" as rt
 import "primer_tasks.wdl" as pt
 import "other_tasks.wdl" as ot
