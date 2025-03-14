@@ -3,26 +3,44 @@
         {
             "name": "AVRL_H5N1_250bp",
             "bed": "AVRL_H5N1_250bpAmpWGS_primer_v2.bed",
-            "reference_name": "A_Bovine_Texas_24_029328_01_2024_H5N1_multi",
+            "reference_name": "A_Bovine_Texas_24-029328-01_2024_H5N1_multi",
             "reference_fasta": "A_Bovine_Texas_24-029328-01_2024_H5N1_multi.fasta"
         },
         {
             "name": "houston",
             "bed": "houston_fluA_primer.bed",
-            "reference_name": "houston_fluA_multi_fasta",
+            "reference_name": "houston_fluA_multi",
             "reference_fasta": "houston_fluA_multi.fasta"
         },
         {
             "name": "human_h5_200",
             "bed": "human_h5_200bp_primer.bed",
-            "reference_name": "A_Texas_37_2024_H5N1_HA_H5_fasta",
+            "reference_name": "A_Texas_37_2024_H5N1_HA-H5",
             "reference_fasta": "A_Texas_37_2024_H5N1_HA-H5.fasta"
         },
         {
             "name": "human_h5_250",
             "bed": "human_h5_250bp_primer.bed",
-            "reference_name": "A_Texas_37_2024_H5N1_HA_H5_fasta",
+            "reference_name": "A_Texas_37_2024_H5N1_HA-H5",
             "reference_fasta": "A_Texas_37_2024_H5N1_HA-H5.fasta"
+        },
+        {
+            "name": "Olivar_A_HA-H1",
+            "bed": "olivar_A_HA-H1_primer.bed",
+            "reference_name": "A_Victoria_4897_2022_H1N1_HA-H1",
+            "reference_fasta": "A_Victoria_4897_2022_H1N1_HA-H1.fasta"
+        },
+        {
+            "name": "Olivar_A_HA-H3",
+            "bed": "olivar_A_HA-H3_primer.bed",
+            "reference_name": "A_Darwin_9_2021_H3N2_HA-H3",
+            "reference_fasta": "A_Darwin_9_2021_H3N2_HA-H3.fasta"
+        },
+        {
+            "name": "Olivar_B_HA",
+            "bed": "olivar_B_HA_primer.bed",
+            "reference_name": "B_Austria_1359417_2021_vic_HA",
+            "reference_fasta": "B_Austria_1359417_2021_vic_HA.fasta"
         }
     ]
 }
