@@ -19,6 +19,12 @@ struct PrimerSchemeArray {
     Array[PrimerScheme] primer_schemes
 }
 
+struct VersionInfo {
+  String software
+  String docker
+  String version
+}
+
 workflow declare_structs {
     input {
         String h5_docker
