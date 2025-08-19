@@ -19,7 +19,7 @@ workflow h5_assembly_analysis {
     # private declarations
     String fastqc_docker = 'staphb/fastqc:0.12.1'
     String fastp_docker = 'staphb/fastp:0.23.2'
-    String ivar_docker = 'staphb/ivar:1.4.2'
+    String ivar_docker = 'staphb/ivar:1.4.4-aligners'
     String multiqc_docker = 'multiqc/multiqc:v1.24'
     String jammy_docker = 'ubuntu:jammy-20240627.1'
     String utility_docker = 'theiagen/utility:1.0'
