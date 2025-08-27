@@ -41,6 +41,12 @@
             "bed": "olivar_B_HA_primer.bed",
             "reference_name": "B_Austria_1359417_2021_vic_HA",
             "reference_fasta": "B_Austria_1359417_2021_vic_HA.fasta"
+        },
+        {
+            "name": "h5_PB2",
+            "bed": "h5_PB2_primer.bed",
+            "reference_name": "h5_PB2_consensus",
+            "reference_fasta": "h5_PB2_consensus.fasta"
         }
     ]
 }

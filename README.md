@@ -36,7 +36,7 @@ The main workflow, `h5_assembly_analysis`, is a set-level workflow that calls al
 | --- | --- | --- |
 | `structs` | Contains struct definitions and subworkflow to download primer schemes structs. | `download_references` |
 | `primer_tasks` | Subworkflow and task declarations for primer-level tasks.| `fastqc`<br>`fastp`<br>`concat_fastqc_summary` |
-| `reference_tasks` | Subworkflow and task declarations for reference-level tasks.| `align_bwa`<br>`calculate_alignment_metrics`<br>`calculate_metrics_samtools`<br>`concat_sample_reference_metrics`<br>`generate_consensus_ivar`<br>`sort_bed`<br>`trim_primers_samtools` |
+| `reference_tasks` | Subworkflow and task declarations for reference-level tasks.| `align_bwa`<br>`calculate_alignment_metrics`<br>`calculate_metrics_samtools`<br>`concat_sample_reference_metrics`<br>`generate_consensus_ivar`<br>`trim_primers_samtools` |
 | `version_capture_tasks` | Task declarations for tool and workflow version capture.| `capture_versions`<br>`workflow_metadata` |
 | `other_tasks` | Task declarations for tasks used by multiple workflows. | `concat_all_samples_metrics`<br>`multiqc`<br>`transfer` |
 
@@ -56,7 +56,6 @@ The main workflow, `h5_assembly_analysis`, is a set-level workflow that calls al
     - Call `multiqc_fastp`
     - Call `other_tasks.transfer`
   - Call `reference_tasks.reference_level_tasks` subworkflow
-    - Call `sort_bed`
     - Scatter samples
       - Call `align_bwa`
       - Call `trim_primers_samtools`
@@ -82,7 +81,10 @@ Located at [ariannaesmith/cdphe_h5_influenza](https://hub.docker.com/repository/
 | `houston_fluA_primer.bed` | `houston_fluA_multi.fasta` | Tiled - HA + NA genes from H5N1 and H3N2; HA gene from H1N1 | [Github repository](https://github.com/treangenlab/InfA-amplicon) |
 | `human_h5_200bp_primer.bed` | `A_Texas_37_2024_H5N1_HA-H5.fasta` | Tiled - HA gene - H5N1 | made in-house  with [PrimalScheme](https://primalscheme.com/) |
 | `human_h5_250bp_primer.bed` | `A_Texas_37_2024_H5N1_HA-H5.fasta` | Tiled - HA gene - H5N1 | made in-house with [PrimalScheme](https://primalscheme.com/) |
-
+| `h5_PB2_primer.bed` | `h5_PB2_consensus.fasta` | Tiled - PB2 gene - H5N1 (B3.13 and D.1.1)| made in-house with [PrimalScheme](https://primalscheme.com/) |
+| `olivar_A_HA-H1_primer.bed` | `A_Victoria_4897_2022_H1N1_HA-H1.fasta` | Tiled - HA gene - H1N1 | Made in-house with [Olivar](https://github.com/treangenlab/Olivar) |
+| `olivar_A_HA-H3_primer.bed` | `A_Darwin_9_2021_H3N2_HA-H3.fasta` | Tiled - HA gene - H3N2 | Made in-house with [Olivar](https://github.com/treangenlab/Olivar) |
+| `olivar_B_HA_primer.bed` | `B_Austria_1359417_2021_vic_HA.fasta` | Tiled - HA gene - B/Victoria | Made in-house with [Olivar](https://github.com/treangenlab/Olivar) |
 
 ### Python scripts
 
@@ -90,4 +92,3 @@ Located at [ariannaesmith/cdphe_h5_influenza](https://hub.docker.com/repository/
 | -- | -- | -- |
 | `calculate_alignment_metrics.py` | `reference_tasks` | Calculate alignment metrics |
 | `concat_fastqc_summary.py` | `primer_tasks` | Calculate QC metrics | 
-| `sort_bed.py` | `reference_tasks` | Sort primer bed file |

@@ -21,11 +21,6 @@ workflow reference_level_tasks {
         String h5_docker
     }
 
-    call sort_bed {
-        input: 
-            primer_bed = primer_bed,
-            docker = h5_docker
-    }
 
     scatter (n in num_samples) {
         Sample sample = primer_samples[n]
@@ -47,7 +42,7 @@ workflow reference_level_tasks {
             input: 
                 sample_name = sample_name,
                 aligned_bam = align_bwa.bam,
-                sorted_bed = sort_bed.sorted_bed,
+                primer_bed = primer_bed,
                 docker = ivar_docker
         }
 
@@ -176,31 +171,10 @@ task align_bwa {
     }
 }
 
-task sort_bed {
-    input {
-        File primer_bed
-        String docker
-    }
-
-    String out_fn = basename(primer_bed, ".bed") + "_sorted.bed"
-
-    command <<<
-        sort_bed.py --bed_file ~{primer_bed} --out_fn ~{out_fn}
-    >>>
-
-    output {
-        File sorted_bed = out_fn
-    }
-
-    runtime {
-        docker: docker
-    }
-}
-
 task trim_primers_samtools {
     input {
         String sample_name
-        File sorted_bed
+        File primer_bed
         File aligned_bam
         String docker
     }
@@ -213,10 +187,10 @@ task trim_primers_samtools {
 
     command <<<
         aligned_bam=~{aligned_bam}
-        sorted_bed=~{sorted_bed}
+        primer_bed=~{primer_bed}
         sn_segments=$(samtools view -H $aligned_bam | grep '^@SQ' | cut -f 2)
         segments=$(for s in ${sn_segments}; do echo "${s#SN:}"; done) # test this bash line again
-        bed_segments=$(cat ${sorted_bed} | cut -f 1 | uniq)
+        bed_segments=$(cat ${primer_bed} | cut -f 1 | uniq)
 
         for elem in ${segments[@]}; do 
             if [[ " ${bed_segments[*]} " =~ [[:space:]]${elem}[[:space:]] ]]; then 
@@ -227,7 +201,7 @@ task trim_primers_samtools {
             fi
         done
 
-        samtools ampliconclip --both-ends -b ~{sorted_bed} -o ~{trim_bam_fn} ~{aligned_bam}
+        samtools ampliconclip --both-ends -b ~{primer_bed} -o ~{trim_bam_fn} ~{aligned_bam}
         samtools sort ~{trim_bam_fn} -o ~{trim_sort_bam_fn}
         samtools index ~{trim_sort_bam_fn}
         samtools idxstats ~{trim_sort_bam_fn} > ~{idxstats_fn}
