@@ -25,6 +25,12 @@
             "reference_fasta": "A_Texas_37_2024_H5N1_HA-H5.fasta"
         },
         {
+            "name": "human_h5_250_spike",
+            "bed": "human_h5_250bp_spike_primer.bed",
+            "reference_name": "A_Texas_37_2024_H5N1_HA-H5",
+            "reference_fasta": "A_Texas_37_2024_H5N1_HA-H5.fasta"
+        },
+        {
             "name": "Olivar_A_HA-H1",
             "bed": "olivar_A_HA-H1_primer.bed",
             "reference_name": "A_Victoria_4897_2022_H1N1_HA-H1",
@@ -47,6 +53,18 @@
             "bed": "h5_PB2_primer.bed",
             "reference_name": "h5_PB2_consensus",
             "reference_fasta": "h5_PB2_consensus.fasta"
+        },
+        {
+            "name": "h7_HA",
+            "bed": "h7_HA_primer.bed",
+            "reference_name": "h7_HA_consensus",
+            "reference_fasta": "h7_HA_consensus.fasta"
+        },
+        {
+            "name": "h9_HA",
+            "bed": "h9_HA_primer.bed",
+            "reference_name": "h9_HA_consensus",
+            "reference_fasta": "h9_HA_consensus.fasta"
         }
     ]
 }

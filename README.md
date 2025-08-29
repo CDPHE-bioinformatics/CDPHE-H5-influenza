@@ -7,9 +7,9 @@ This repository is in active development and is not yet ready for production use
 Next generation sequencing and bioinformatic and genomic analysis at the Colorado Department of Public Health and Environment (CDPHE) is not CLIA validated at this time. These workflows and their outputs are not to be used for diagnostic purposes and should only be used for public health action and surveillance purposes. CDPHE is not responsible for the incorrect or inappropriate use of these workflows or their results.
 
 ## Overview
-The following documentation describes the Colorado Department of Public Health and Environment's workflows for the assembly and analysis of next genome sequencing data of H5 influenza on GCP's Terra.bio platform. 
+The following documentation describes the Colorado Department of Public Health and Environment's workflows for the assembly and analysis of next genome sequencing data of H5 (primarily) influenza on GCP's Terra.bio platform. 
 
-The workflow currently allows for various primer schemes and references for alignment. Some are only for certain gene segments while others are whole genome. See Workspace data below.
+The workflow currently allows for various primer schemes and references for alignment. Some are only for certain gene segments while others are whole genome. See Reference data below.
 
 The workflow is split into multiple WDL files, but is all launched as one workflow.
 
@@ -68,10 +68,11 @@ The main workflow, `h5_assembly_analysis`, is a set-level workflow that calls al
 - Call `other_tasks.transfer_concat_metrics`
 - Call `version_capture_tasks.capture_versions`
 - Call `other_tasks.transfer_vc` 
+- Output `fastq` raw and cleaned data and summary files, cleaned fastqs, aligments, consensuses, sample and segment metrics, `multiqc` reports, and version capture information.
 
 ## Docker container
 
-Located at [ariannaesmith/cdphe_h5_influenza](https://hub.docker.com/repository/docker/ariannaesmith/cdphe_h5_influenza/general).
+The docker container specific to this workflow is located at [ariannaesmith/cdphe_h5_influenza](https://hub.docker.com/repository/docker/ariannaesmith/cdphe_h5_influenza/general) and contains the following reference data and Python scripts:
 
 ### Reference data
 
@@ -81,7 +82,10 @@ Located at [ariannaesmith/cdphe_h5_influenza](https://hub.docker.com/repository/
 | `houston_fluA_primer.bed` | `houston_fluA_multi.fasta` | Tiled - HA + NA genes from H5N1 and H3N2; HA gene from H1N1 | [Github repository](https://github.com/treangenlab/InfA-amplicon) |
 | `human_h5_200bp_primer.bed` | `A_Texas_37_2024_H5N1_HA-H5.fasta` | Tiled - HA gene - H5N1 | made in-house  with [PrimalScheme](https://primalscheme.com/) |
 | `human_h5_250bp_primer.bed` | `A_Texas_37_2024_H5N1_HA-H5.fasta` | Tiled - HA gene - H5N1 | made in-house with [PrimalScheme](https://primalscheme.com/) |
+| `human_h5_250bp_spike_primer.bed` | `A_Texas_37_2024_H5N1_HA-H5.fasta` | Tiled - HA gene - H5N1 (D.1.1) | made in-house with [PrimalScheme](https://primalscheme.com/) |
 | `h5_PB2_primer.bed` | `h5_PB2_consensus.fasta` | Tiled - PB2 gene - H5N1 (B3.13 and D.1.1)| made in-house with [PrimalScheme](https://primalscheme.com/) |
+| `h7_HA_primer.bed` | `h7_HA_consensus.fasta` | Tiled - HA gene - H7 | made in-house with [PrimalScheme](https://primalscheme.com/) |
+| `h9_HA_primer.bed` | `h9_HA_consensus.fasta` | Tiled - HA gene - H9 | made in-house with [PrimalScheme](https://primalscheme.com/) |
 | `olivar_A_HA-H1_primer.bed` | `A_Victoria_4897_2022_H1N1_HA-H1.fasta` | Tiled - HA gene - H1N1 | Made in-house with [Olivar](https://github.com/treangenlab/Olivar) |
 | `olivar_A_HA-H3_primer.bed` | `A_Darwin_9_2021_H3N2_HA-H3.fasta` | Tiled - HA gene - H3N2 | Made in-house with [Olivar](https://github.com/treangenlab/Olivar) |
 | `olivar_B_HA_primer.bed` | `B_Austria_1359417_2021_vic_HA.fasta` | Tiled - HA gene - B/Victoria | Made in-house with [Olivar](https://github.com/treangenlab/Olivar) |
