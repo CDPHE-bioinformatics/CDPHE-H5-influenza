@@ -19,6 +19,7 @@ workflow reference_level_tasks {
         String multiqc_docker
         String utility_docker
         String h5_docker
+        Boolean transfer_results
     }
 
 
@@ -98,20 +99,22 @@ workflow reference_level_tasks {
     Array[String] reference_task_dirs = ["alignments", "assemblies", "samtools", "summary_results"]
     Array[Array[File]] reference_task_files = [alignment_output, consensus_output, samtools_output, summary_output]
 
-    scatter (dir_files in zip(reference_task_dirs, reference_task_files)) {       
-        call ot.transfer {
-            input:
-                out_dir = reference_outdir,
-                task_dir = dir_files.left,
-                task_files = dir_files.right,
-                docker = utility_docker
+    if (transfer_results) {
+        scatter (dir_files in zip(reference_task_dirs, reference_task_files)) {       
+            call ot.transfer {
+                input:
+                    out_dir = reference_outdir,
+                    task_dir = dir_files.left,
+                    task_files = dir_files.right,
+                    docker = utility_docker
+            }
         }
     }
 
     output {
-        VersionInfo samtools_version = select_first(align_bwa.samtools_version_info)
-        VersionInfo bwa_version = select_first(align_bwa.bwa_version_info)
-        VersionInfo ivar_version = select_first(align_bwa.ivar_version_info)
+        VersionInfo samtools_version = align_bwa.samtools_version_info[0]
+        VersionInfo bwa_version = align_bwa.bwa_version_info[0]
+        VersionInfo ivar_version = align_bwa.ivar_version_info[0]
         Array[File] alignment_outputs = alignment_output
         Array[File] consensus_outputs = consensus_output
         Array[File] summary_outputs = [calculate_alignment_metrics.segment_metrics, calculate_alignment_metrics.sample_metrics, multiqc_samtools.html_report]

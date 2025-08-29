@@ -13,6 +13,7 @@ workflow primer_level_tasks {
         String multiqc_docker
         String utility_docker
         String h5_docker
+        Boolean transfer_results
     }
 
     scatter (sample in primer_samples) {
@@ -84,13 +85,15 @@ workflow primer_level_tasks {
     Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "fastp", "summary_results"]
     Array[Array[File]] primer_task_files = [fastqc_raw_output, fastqc_clean_output, fastp_output, p_summary_output]       
 
-    scatter (dir_files in zip(primer_task_dirs, primer_task_files)) {       
-        call ot.transfer {
-            input:
-                out_dir = primer_outdir,
-                task_dir = dir_files.left,
-                task_files = dir_files.right,
-                docker = utility_docker
+    if (transfer_results) {
+        scatter (dir_files in zip(primer_task_dirs, primer_task_files)) {       
+            call ot.transfer {
+                input:
+                    out_dir = primer_outdir,
+                    task_dir = dir_files.left,
+                    task_files = dir_files.right,
+                    docker = utility_docker
+            }
         }
     }
 
@@ -102,8 +105,8 @@ workflow primer_level_tasks {
         Array[File] p_summary_outputs = p_summary_output
         Array[File] fastqc_clean_summary_metrics = fastqc_clean.summary_metrics
         File fastqc_summary = concat_fastqc_summary.fastqc_summary
-        VersionInfo fastqc_version = select_first(fastqc_raw.version_info)
-        VersionInfo fastp_version = select_first(fastp.version_info)
+        VersionInfo fastqc_version = fastqc_raw.version_info[0]
+        VersionInfo fastp_version = fastp.version_info[0]
         VersionInfo multiqc_version = multiqc_fastqc.version_info
         VersionInfo h5_docker_version = concat_fastqc_summary.version_info
     }
@@ -212,7 +215,7 @@ task fastp {
     }
 
     runtime {
-        cpu: 8
+        cpu: 1
         memory: "8G"
         docker: docker
     }

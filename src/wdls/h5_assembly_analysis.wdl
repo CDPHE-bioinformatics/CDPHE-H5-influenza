@@ -13,7 +13,7 @@ workflow h5_assembly_analysis {
         Array[File] fastq1s
         Array[File] fastq2s
         String project_name
-        String out_dir
+        String? out_dir
     }
 
     # private declarations
@@ -21,7 +21,7 @@ workflow h5_assembly_analysis {
     String fastp_docker = 'staphb/fastp:0.23.2'
     String ivar_docker = 'staphb/ivar:1.4.4-aligners'
     String multiqc_docker = 'multiqc/multiqc:v1.24'
-    String jammy_docker = 'ubuntu:jammy-20240627.1'
+    String ubuntu_docker = 'ubuntu:jammy-20240627.1'
     String utility_docker = 'theiagen/utility:1.0'
     String h5_docker = 'ariannaesmith/cdphe_h5_influenza:v0.1.0'
     String version_capture_docker = 'ariannaesmith/cdphe_wdl_version_capture:v0.1.0'
@@ -32,13 +32,16 @@ workflow h5_assembly_analysis {
 
     Array[Int] indexes = range(length(sample_names))
 
+
     call vc.workflow_metadata as w_meta { 
         input: 
-            docker = jammy_docker,
+            docker = ubuntu_docker,
             workflow_name = workflow_name,
             workflow_version = workflow_version
     }
-    String project_outdir = out_dir + "/" +  project_name + "/terra_outputs/" + workflow_version_und + "/"
+
+    Boolean transfer_results = defined(out_dir)
+    String project_outdir = if transfer_results then (sub(out_dir, "/$", "") + "/" +  project_name + "/terra_outputs/" + workflow_version_und + "/") else ""
 
     # Struct initilizations (subworkflow)
     call initializations.declare_structs as ini { input: h5_docker = h5_docker}
@@ -84,7 +87,8 @@ workflow h5_assembly_analysis {
                     fastp_docker = fastp_docker,
                     multiqc_docker = multiqc_docker,
                     utility_docker = utility_docker,
-                    h5_docker = h5_docker
+                    h5_docker = h5_docker,
+                    transfer_results = transfer_results
             }
 
             Array[File] fastp_output = flatten([p_sub.cleaned_PE1, p_sub.cleaned_PE2])
@@ -108,7 +112,8 @@ workflow h5_assembly_analysis {
                     ivar_docker = ivar_docker,
                     multiqc_docker = multiqc_docker,
                     utility_docker = utility_docker,
-                    h5_docker = h5_docker
+                    h5_docker = h5_docker,
+                    transfer_results = transfer_results
             }   
         }
     }
@@ -118,15 +123,17 @@ workflow h5_assembly_analysis {
             project_name = project_name,
             segment_metrics_files = select_all(r_sub.segment_metrics_file),
             sample_metrics_files = select_all(r_sub.sample_metrics_file),
-            docker = jammy_docker
+            docker = ubuntu_docker
     }
-
-    call ot.transfer as transfer_concat_metrics {
-        input:
-            out_dir = project_outdir,
-            task_dir = 'summary_results',
-            task_files = [concat_metrics.segment_summary, concat_metrics.sample_summary],
-            docker = utility_docker
+    
+    if (transfer_results) {
+        call ot.transfer as transfer_concat_metrics {
+            input:
+                out_dir = project_outdir,
+                task_dir = 'summary_results',
+                task_files = [concat_metrics.segment_summary, concat_metrics.sample_summary],
+                docker = utility_docker
+        }
     }
 
     # Collect various version information
@@ -151,12 +158,14 @@ workflow h5_assembly_analysis {
             docker = version_capture_docker
     }
 
-    call ot.transfer as transfer_vc {
-        input:
-            out_dir = project_outdir,
-            task_dir = 'summary_results',
-            task_files = [version_cap.output_file],
-            docker = utility_docker
+    if (transfer_results) {
+        call ot.transfer as transfer_vc {
+            input:
+                out_dir = project_outdir,
+                task_dir = 'summary_results',
+                task_files = [version_cap.output_file],
+                docker = utility_docker
+        }
     }
 
     output { 
@@ -169,7 +178,7 @@ workflow h5_assembly_analysis {
         Array[Array[File]] primers_consensus_outputs = select_all(r_sub.consensus_outputs)
         Array[Array[File]] primers_ref_summary_outputs = select_all(r_sub.summary_outputs)
         Array[File] concatenated_summary_outputs = [concat_metrics.segment_summary, concat_metrics.sample_summary]
-        Array[VersionInfo] version_capture = version_array
+        File version_capture = version_cap.output_file
     }    
 }
 
