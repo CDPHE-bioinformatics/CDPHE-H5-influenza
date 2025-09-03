@@ -13,7 +13,7 @@ workflow h5_assembly_analysis {
         Array[File] fastq1s
         Array[File] fastq2s
         String project_name
-        String? out_dir
+        String out_dir = ""
     }
 
     # private declarations
@@ -40,7 +40,7 @@ workflow h5_assembly_analysis {
             workflow_version = workflow_version
     }
 
-    Boolean transfer_results = defined(out_dir)
+    Boolean transfer_results = (out_dir != "")
     String project_outdir = if transfer_results then (sub(out_dir, "/$", "") + "/" +  project_name + "/terra_outputs/" + workflow_version_und + "/") else ""
 
     # Struct initilizations (subworkflow)
