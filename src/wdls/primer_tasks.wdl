@@ -184,7 +184,9 @@ task fastp {
     String fastp_json_name = "~{sample.name}_fastp.json"
 
     command <<<
-        fastp --version | tee VERSION
+        readarray -d ' ' arr <<< $(fastp --version 2>&1) # fastp --version is read to stderror instead of stdout
+        echo ${arr[@]:1:2} | tee VERSION
+
         fastp \
             --in1 ~{sample.fastq1} --in2 ~{sample.fastq2} \
             --out1 ~{cleaned_1_name} --out2 ~{cleaned_2_name}  \
