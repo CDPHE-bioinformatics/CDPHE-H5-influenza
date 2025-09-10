@@ -7,7 +7,7 @@ This repository is in active development and is not yet ready for production use
 Next generation sequencing and bioinformatic and genomic analysis at the Colorado Department of Public Health and Environment (CDPHE) is not CLIA validated at this time. These workflows and their outputs are not to be used for diagnostic purposes and should only be used for public health action and surveillance purposes. CDPHE is not responsible for the incorrect or inappropriate use of these workflows or their results.
 
 ## Overview
-The following documentation describes the Colorado Department of Public Health and Environment's workflows for the assembly and analysis of next genome sequencing data of H5 (primarily) influenza on GCP's Terra.bio platform. 
+The following documentation describes the Colorado Department of Public Health and Environment's workflows for the assembly and analysis of genome sequencing data of H5 (primarily) influenza on GCP's Terra.bio platform. 
 
 The workflow currently allows for various primer schemes and references for alignment. Some are only for certain gene segments while others are whole genome. See Reference data below.
 
