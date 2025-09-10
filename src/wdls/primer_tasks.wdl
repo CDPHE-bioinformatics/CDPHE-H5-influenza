@@ -131,7 +131,7 @@ task fastqc {
 
     command <<<
         fastqc --outdir $PWD --extract --delete ~{fastq1} ~{fastq2}
-        fastqc --version | awk "{print $NF}" | tee VERSION  
+        fastqc --version | awk '{print $2}' | tee VERSION  
         cp "~{fastq1_name}_fastqc/fastqc_data.txt" ~{fastq1_data_name}
         cp "~{fastq2_name}_fastqc/fastqc_data.txt" ~{fastq2_data_name}
 
@@ -184,9 +184,7 @@ task fastp {
     String fastp_json_name = "~{sample.name}_fastp.json"
 
     command <<<
-        readarray -d ' ' arr <<< $(fastp --version 2>&1) # fastp --version is read to stderror instead of stdout
-        echo ${arr[@]:1:2} | tee VERSION
-
+        fastp --version 2>&1 | awk '{print $2}' | tee VERSION
         fastp \
             --in1 ~{sample.fastq1} --in2 ~{sample.fastq2} \
             --out1 ~{cleaned_1_name} --out2 ~{cleaned_2_name}  \
