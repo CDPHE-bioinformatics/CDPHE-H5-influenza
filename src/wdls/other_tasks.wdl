@@ -36,7 +36,7 @@ task multiqc {
         multiqc -m "~{module}" -l ~{write_lines(files)} -n ~{html_fn} \
         ~{if defined(cl_config) then '~{base_cl_config}\n~{cl_config}"' else '~{base_cl_config}"'}  
 
-        multiqc --version | awk ' {print $3}' | tee VERSION
+        multiqc --version | awk '{print $3}' | tee VERSION
     >>>
 
     output {
