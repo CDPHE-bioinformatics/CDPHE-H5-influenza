@@ -1,8 +1,5 @@
 version: 1.2
 workflows:
- - name: h5_structs
+ - name: h5_assembly_analysis
    subclass: WDL
-   primaryDescriptorPath: /h5_structs.wdl
- - name: h5_testing
-   subclass: WDL
-   primaryDescriptorPath: /h5_testing.wdl
+   primaryDescriptorPath: /src/wdls/h5_assembly_analysis.wdl
