@@ -80,9 +80,9 @@ The docker container specific to this workflow is located at [ariannaesmith/cdph
 | -- | -- | -- | -- 
 | `AVRL_H5N1_250bpAmpWGS_primer_v2.bed` | `A_Bovine_Texas_24-029328-01_2024_H5N1_multi.fasta` | Tiled - whole genome - H5N1 | [Paper](dx.doi.org/10.17504/protocols.io.kqdg322kpv25/v1) |
 | `houston_fluA_primer.bed` | `houston_fluA_multi.fasta` | Tiled - HA + NA genes from H5N1 and H3N2; HA gene from H1N1 | [Github repository](https://github.com/treangenlab/InfA-amplicon) |
-| `human_h5_200bp_primer.bed` | `A_Texas_37_2024_H5N1_HA-H5.fasta` | Tiled - HA gene - H5N1 | made in-house  with [PrimalScheme](https://primalscheme.com/) |
-| `human_h5_250bp_primer.bed` | `A_Texas_37_2024_H5N1_HA-H5.fasta` | Tiled - HA gene - H5N1 | made in-house with [PrimalScheme](https://primalscheme.com/) |
-| `human_h5_250bp_spike_primer.bed` | `A_Texas_37_2024_H5N1_HA-H5.fasta` | Tiled - HA gene - H5N1 (D.1.1) | made in-house with [PrimalScheme](https://primalscheme.com/) |
+| `human_h5_200_primer.bed` | `A_Texas_37_2024_H5N1_HA-H5.fasta` | Tiled - HA gene - H5N1 | made in-house  with [PrimalScheme](https://primalscheme.com/) |
+| `human_h5_250_primer.bed` | `A_Texas_37_2024_H5N1_HA-H5.fasta` | Tiled - HA gene - H5N1 | made in-house with [PrimalScheme](https://primalscheme.com/) |
+| `human_h5_250_spike_primer.bed` | `A_Texas_37_2024_H5N1_HA-H5.fasta` | Tiled - HA gene - H5N1 (D.1.1) | made in-house with [PrimalScheme](https://primalscheme.com/) |
 | `h5_PB2_primer.bed` | `h5_PB2_consensus.fasta` | Tiled - PB2 gene - H5N1 (B3.13 and D.1.1)| made in-house with [PrimalScheme](https://primalscheme.com/) |
 | `h7_HA_primer.bed` | `h7_HA_consensus.fasta` | Tiled - HA gene - H7 | made in-house with [PrimalScheme](https://primalscheme.com/) |
 | `h9_HA_primer.bed` | `h9_HA_consensus.fasta` | Tiled - HA gene - H9 | made in-house with [PrimalScheme](https://primalscheme.com/) |
