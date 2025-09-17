@@ -14,19 +14,19 @@
         },
         {
             "name": "human_h5_200",
-            "bed": "human_h5_200bp_primer.bed",
+            "bed": "human_h5_200_primer.bed",
             "reference_name": "A_Texas_37_2024_H5N1_HA-H5",
             "reference_fasta": "A_Texas_37_2024_H5N1_HA-H5.fasta"
         },
         {
             "name": "human_h5_250",
-            "bed": "human_h5_250bp_primer.bed",
+            "bed": "human_h5_250_primer.bed",
             "reference_name": "A_Texas_37_2024_H5N1_HA-H5",
             "reference_fasta": "A_Texas_37_2024_H5N1_HA-H5.fasta"
         },
         {
             "name": "human_h5_250_spike",
-            "bed": "human_h5_250bp_spike_primer.bed",
+            "bed": "human_h5_250_spike_primer.bed",
             "reference_name": "A_Texas_37_2024_H5N1_HA-H5",
             "reference_fasta": "A_Texas_37_2024_H5N1_HA-H5.fasta"
         },
