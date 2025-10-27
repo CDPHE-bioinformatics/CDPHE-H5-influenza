@@ -18,18 +18,19 @@ workflow h5_assembly_analysis {
     }
 
     # private declarations
+    
+    String workflow_name = 'h5_assembly_analysis'
+    String workflow_version = 'v1.1.0'
+    String workflow_version_und = sub(workflow_version, "\\.", "_")
+
     String fastqc_docker = 'staphb/fastqc:0.12.1'
     String fastp_docker = 'staphb/fastp:0.23.2'
     String ivar_docker = 'staphb/ivar:1.4.4-aligners'
     String multiqc_docker = 'multiqc/multiqc:v1.24'
     String ubuntu_docker = 'ubuntu:jammy-20240627.1'
     String utility_docker = 'theiagen/utility:1.0'
-    String h5_docker = 'ariannaesmith/cdphe_h5_influenza:v1.0.0'
+    String h5_docker = 'ariannaesmith/cdphe_h5_influenza:~{workflow_version}'
     String version_capture_docker = 'ariannaesmith/cdphe_wdl_version_capture:v0.1.0'
-    
-    String workflow_name = 'h5_assembly_analysis'
-    String workflow_version = 'v1.1.0'
-    String workflow_version_und = sub(workflow_version, "\\.", "_")
 
     Array[Int] indexes = range(length(sample_names))
 
