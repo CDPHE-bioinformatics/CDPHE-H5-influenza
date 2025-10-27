@@ -48,6 +48,7 @@ task download_references {
     command <<<
         cp $APPDIR/references/* .
         echo "Outputting references..."
+        ls
     >>>
 
     output {
