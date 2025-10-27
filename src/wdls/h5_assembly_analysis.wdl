@@ -28,7 +28,7 @@ workflow h5_assembly_analysis {
     String version_capture_docker = 'ariannaesmith/cdphe_wdl_version_capture:v0.1.0'
     
     String workflow_name = 'h5_assembly_analysis'
-    String workflow_version = 'v1.0.0'
+    String workflow_version = 'v1.1.0'
     String workflow_version_und = sub(workflow_version, "\\.", "_")
 
     Array[Int] indexes = range(length(sample_names))
