@@ -14,6 +14,7 @@ workflow h5_assembly_analysis {
         Array[File] fastq2s
         String project_name
         String out_dir = ""
+        String? sub_dir
     }
 
     # private declarations
@@ -41,7 +42,8 @@ workflow h5_assembly_analysis {
     }
 
     Boolean transfer_results = (out_dir != "")
-    String project_outdir = if transfer_results then (sub(out_dir, "/$", "") + "/" +  project_name + "/terra_outputs/" + workflow_version_und + "/") else ""
+    Boolean optional_subdir = defined(sub_dir)
+    String project_outdir = if transfer_results then (sub(out_dir, "/$", "") + "/" +  project_name + (if optional_subdir then sub_dir + "/" else "") + "/terra_outputs/" + workflow_version_und + "/") else ""
 
     # Struct initilizations (subworkflow)
     call initializations.declare_structs as ini { input: h5_docker = h5_docker}
