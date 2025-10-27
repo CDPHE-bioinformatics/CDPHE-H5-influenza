@@ -53,10 +53,13 @@ task download_references {
     output {
         PrimerSchemeArray primer_schemes = read_json("primer_scheme_structs.json")
         File A_Bovine_Texas_24_029328_01_2024_H5N1_multi_fasta = "A_Bovine_Texas_24-029328-01_2024_H5N1_multi.fasta"
-        File A_Darwin_9_2021_H3N2_HA_H3 = "A_Darwin_9_2021_H3N2_HA-H3.fasta"
+        File A_California_07_2009_H1N1_HA-H1_fasta = "A_California_07_2009_H1N1_HA-H1.fasta"
+        File A_Darwin_9_2021_H3N2_HA_H3_fasta = "A_Darwin_9_2021_H3N2_HA-H3.fasta"
         File A_Texas_37_2024_H5N1_HA_H5_fasta = "A_Texas_37_2024_H5N1_HA-H5.fasta"
-        File A_Victoria_4897_2022_H1N1_HA_H1 = "A_Victoria_4897_2022_H1N1_HA-H1.fasta"
-        File B_Austria_1359417_2021_vic_HA = "B_Austria_1359417_2021_vic_HA.fasta"
+        File A_Victoria_4897_2022_H1N1_HA_H1_fasta = "A_Victoria_4897_2022_H1N1_HA-H1.fasta"
+        File A_Wisconsin_67_2005_H3N2_HA-H3_fasta = "A_Wisconsin_67_2005_H3N2_HA-H3.fasta"
+        File B_Austria_1359417_2021_vic_HA_fasta = "B_Austria_1359417_2021_vic_HA.fasta"
+        File B_Brisbane_60_2008_vic_HA_fasta = "B_Brisbane_60_2008_vic_HA.fasta"
         File houston_fluA_multi_fasta = "houston_fluA_multi.fasta"
         File h5_PB2_fasta = "h5_PB2_consensus.fasta"
         File h7_HA_fasta = "h7_HA_consensus.fasta"
@@ -70,8 +73,11 @@ task download_references {
         File h7_HA_bed = "h7_HA_primer.bed"
         File h9_HA_bed = "h9_HA_primer.bed"
         File olivar_A_HA_H1_bed = "olivar_A_HA-H1_primer.bed"
+        File olivar_A_HA_H1_bed_freyja_liftover_bed = "olivar_A_HA-H1_primer_freyja_liftover_primer.bed"
         File olivar_A_HA_H3_bed = "olivar_A_HA-H3_primer.bed"
+        File olivar_A_HA_H3_bed_freyja_liftover_bed = "olivar_A_HA-H3_primer_freyja_liftover_primer.bed"
         File olivar_B_HA_bed = "olivar_B_HA_primer.bed"
+        File olivar_B_HA_bed_freyja_liftover_bed = "olivar_B_HA_primer_freyja_liftover_primer.bed"
     }
 
     runtime {
