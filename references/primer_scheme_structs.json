@@ -38,7 +38,7 @@
         },
         {
             "name": "Olivar_A_HA-H1_freyja_liftover",
-            "bed": "olivar_A_HA-H1_primer_freyja_liftover.bed",
+            "bed": "olivar_A_HA-H1_freyja_liftover_primer.bed",
             "reference_name": "A_California_07_2009_H1N1_HA-H1",
             "reference_fasta": "A_California_07_2009_H1N1_HA-H1.fasta"
         },
@@ -50,7 +50,7 @@
         },
         {
             "name": "Olivar_A_HA-H3_freyja_liftover",
-            "bed": "olivar_A_HA-H3_primer_freyja_liftover.bed",
+            "bed": "olivar_A_HA-H3_freyja_liftover_primer.bed",
             "reference_name": "A_Wisconsin_67_2005_H3N2_HA-H3",
             "reference_fasta": "A_Wisconsin_67_2005_H3N2_HA-H3.fasta"
         },
@@ -62,7 +62,7 @@
         },
         {
             "name": "Olivar_B_HA_freyja_liftover",
-            "bed": "olivar_B_HA_primer_freyja_liftover.bed",
+            "bed": "olivar_B_HA_freyja_liftover_primer.bed",
             "reference_name": "B_Brisbane_60_2008_vic_HA",
             "reference_fasta": "B_Brisbane_60_2008_vic_HA.fasta"
         },
