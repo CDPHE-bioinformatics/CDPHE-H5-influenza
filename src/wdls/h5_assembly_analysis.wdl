@@ -44,7 +44,7 @@ workflow h5_assembly_analysis {
 
     Boolean transfer_results = (out_dir != "")
     Boolean optional_subdir = defined(sub_dir)
-    String project_outdir = if transfer_results then (sub(out_dir, "/$", "") + "/" +  project_name + (if optional_subdir then sub_dir + "/" else "") + "/terra_outputs/" + workflow_version_und + "/") else ""
+    String project_outdir = if transfer_results then (sub(out_dir, "/$", "") + "/" +  project_name + (if optional_subdir then "/" + sub_dir else "") + "/terra_outputs/" + workflow_version_und + "/") else ""
 
     # Struct initilizations (subworkflow)
     call initializations.declare_structs as ini { input: h5_docker = h5_docker}
