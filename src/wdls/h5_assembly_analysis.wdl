@@ -80,9 +80,14 @@ workflow h5_assembly_analysis {
                 if ((fastqs_size > 1) || reads_bool) {
                     Sample primer_sample = all_samp
                 }
+                # Keep track of samples with empty fastqs
+                if (reads_bool == false) {
+                    String empty_fastq_primer_sample = all_samp.name
+                }
             }
         }
         Array[Sample] primer_samples = select_all(primer_sample)
+        Array[String] empty_fastq_primer_samples = select_all(empty_fastq_primer_sample)
         
         # Only call downstream tasks if primer was used
         if (length(primer_samples) > 0) {
@@ -191,6 +196,7 @@ workflow h5_assembly_analysis {
         Array[Array[File]] primers_ref_summary_outputs = select_all(r_sub.summary_outputs)
         Array[File] concatenated_summary_outputs = [concat_metrics.segment_summary, concat_metrics.sample_summary]
         File version_capture = version_cap.output_file
+        Array[String] empty_fastq_samples = select_all(empty_fastq_primer_samples)
     }    
 }
 
