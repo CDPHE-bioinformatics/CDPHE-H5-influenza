@@ -16,7 +16,7 @@ task check_empty_fastq {
     >>>
 
     output {
-        Boolean has_reads = read_int(stdout())/4 > 0
+        Boolean has_reads = (read_int(stdout()) / 4) > 0
     }
 
     runtime {
