@@ -73,7 +73,8 @@ workflow h5_assembly_analysis {
                     call ot.check_empty_fastq as num_reads {
                         input:
                             fastq1 = all_samp.fastq1,
-                            fastq2 = all_samp.fastq2
+                            fastq2 = all_samp.fastq2,
+                            docker = ubuntu_docker
                     }
                 }
                 Boolean reads_bool = select_first([num_reads.has_reads, true])

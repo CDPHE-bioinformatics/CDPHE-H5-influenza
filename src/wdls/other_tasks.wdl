@@ -6,6 +6,7 @@ task check_empty_fastq {
     input {
         File fastq1
         File fastq2
+        String docker
     }
 
     command <<<
@@ -16,6 +17,10 @@ task check_empty_fastq {
 
     output {
         Boolean has_reads = read_int(stdout()) > 0
+    }
+    
+    runtime {
+        docker: docker
     }
 }
 
