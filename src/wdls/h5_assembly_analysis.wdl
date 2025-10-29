@@ -67,8 +67,17 @@ workflow h5_assembly_analysis {
         scatter (all_samp in samples) {
             if (all_samp.primer == ps.name) {
                 # Only add to list if fastqs are not empty
-                Float fastqs_size = size([all_samp.fastq1, all_samp.fastq2], "MiB")
-                if (fastqs_size > 1) {
+                Float fastqs_size = size([all_samp.fastq1, all_samp.fastq2], "KiB")
+                # For small files, specifically check the number of reads
+                if (fastqs_size <= 1) {
+                    call ot.check_empty_fastq as num_reads {
+                        input:
+                            fastq1 = all_samp.fastq1,
+                            fastq2 = all_samp.fastq2
+                    }
+                }
+                Boolean reads_bool = select_first([num_reads.has_reads, true])
+                if ((fastqs_size > 1) || reads_bool) {
                     Sample primer_sample = all_samp
                 }
             }

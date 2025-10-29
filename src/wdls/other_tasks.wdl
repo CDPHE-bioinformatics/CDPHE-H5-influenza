@@ -2,6 +2,23 @@ version 1.0
 
 import "structs.wdl"
 
+task check_empty_fastq {
+    input {
+        File fastq1
+        File fastq2
+    }
+
+    command <<<
+        fastq1="~{fastq1}"
+        fastq1="~{fastq2}"
+        echo $(gunzip -c $fastq1 $fastq2 | wc -l)/4 | bc
+    >>>
+
+    output {
+        Boolean has_reads = read_int(stdout()) > 0
+    }
+}
+
 task transfer {
     input {
         String out_dir
