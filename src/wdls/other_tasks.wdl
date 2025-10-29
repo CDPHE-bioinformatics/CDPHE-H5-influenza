@@ -12,13 +12,13 @@ task check_empty_fastq {
     command <<<
         fastq1="~{fastq1}"
         fastq1="~{fastq2}"
-        echo $(gunzip -c $fastq1 $fastq2 | wc -l)/4 | bc
+        gunzip -c $fastq1 $fastq2 | wc -l
     >>>
 
     output {
-        Boolean has_reads = read_int(stdout()) > 0
+        Boolean has_reads = read_int(stdout())/4 > 0
     }
-    
+
     runtime {
         docker: docker
     }
