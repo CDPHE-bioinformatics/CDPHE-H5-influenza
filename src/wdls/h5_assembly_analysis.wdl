@@ -197,7 +197,7 @@ workflow h5_assembly_analysis {
         Array[Array[File]] primers_ref_summary_outputs = select_all(r_sub.summary_outputs)
         Array[File] concatenated_summary_outputs = [concat_metrics.segment_summary, concat_metrics.sample_summary]
         File version_capture = version_cap.output_file
-        Array[String] empty_fastq_samples = select_all(empty_fastq_primer_samples)
+        Array[Array[String]] empty_fastq_samples = select_all(empty_fastq_primer_samples)
     }    
 }
 
