@@ -53,7 +53,8 @@ The main workflow, `h5_assembly_analysis`, is a set-level workflow that calls al
       - Call `fastp`
       - Call `fastqc_clean`
     - Call `concat_fastqc_summary`
-    - Call `multiqc_fastqc`
+    - Call `multiqc_fastqc_raw`
+    - Call `multiqc_fastqc_clean`
     - Call `multiqc_fastp`
     - Call `other_tasks.transfer`
   - Call `reference_tasks.reference_level_tasks` subworkflow
@@ -69,7 +70,7 @@ The main workflow, `h5_assembly_analysis`, is a set-level workflow that calls al
 - Call `other_tasks.transfer_concat_metrics`
 - Call `version_capture_tasks.capture_versions`
 - Call `other_tasks.transfer_vc` 
-- Output `fastq` raw and cleaned data and summary files, cleaned fastqs, aligments, consensuses, sample and segment metrics, `multiqc` reports, and version capture information.
+- Output `fastq` raw and cleaned data and html files, cleaned fastqs, aligments, consensuses, sample and segment metrics, `multiqc` reports, and version capture information.
 
 ## Docker container
 
