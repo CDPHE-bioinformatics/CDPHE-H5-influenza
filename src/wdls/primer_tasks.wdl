@@ -148,7 +148,7 @@ task fastqc {
         mv "~{fastq1_string}/fastqc_data.txt" ~{fastq1_data}
         mv "~{fastq1_string}/fastqc_report.html" ~{fastq1_html}
         mv "~{fastq2_string}/fastqc_data.txt" ~{fastq2_data}
-        mv "~{fastq2_string}/fastqc_report.html" ~{fastq1_html}
+        mv "~{fastq2_string}/fastqc_report.html" ~{fastq2_html}
 
         # Summarize output to simpler csv file
         summarize_fastqc () {
@@ -168,8 +168,8 @@ task fastqc {
 
     output {
         File fastqc1_data = fastq1_data
-        File fastqc2_data = fastq2_data
         File fastqc1_html = fastq1_html
+        File fastqc2_data = fastq2_data
         File fastqc2_html = fastq2_html
         File summary_metrics = summary_metrics_fn
         String version = read_string('VERSION')
