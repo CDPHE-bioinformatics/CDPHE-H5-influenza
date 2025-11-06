@@ -20,7 +20,7 @@ workflow h5_assembly_analysis {
     # private declarations
     
     String workflow_name = 'h5_assembly_analysis'
-    String workflow_version = 'v1.1.0'
+    String workflow_version = 'v1.2.0'
     String workflow_version_und = sub(workflow_version, "\\.", "_")
 
     String fastqc_docker = 'staphb/fastqc:0.12.1'
