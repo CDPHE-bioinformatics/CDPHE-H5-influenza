@@ -32,12 +32,15 @@ task transfer {
         String docker
     }
 
+    Int dynamic_disk_size = ceil(size(task_files, "GiB")) + 1
+    
     command <<<
         cat "~{write_lines(task_files)}" | gsutil -m cp -I "~{out_dir}~{task_dir}/"
     >>>
 
     runtime {
         docker: docker
+        disks: "local-disk ~{dynamic_disk_size} SSD"
     }
 }
 
