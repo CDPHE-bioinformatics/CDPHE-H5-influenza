@@ -9,6 +9,10 @@ task check_empty_fastq {
         String docker
     }
 
+    meta {
+        volatile: true
+    }
+
     command <<<
         fastq1="~{fastq1}"
         fastq1="~{fastq2}"
