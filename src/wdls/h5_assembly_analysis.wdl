@@ -30,7 +30,7 @@ workflow h5_assembly_analysis {
     String ubuntu_docker = 'ubuntu:jammy-20240627.1'
     String utility_docker = 'theiagen/utility:1.0'
     String h5_docker = 'ariannaesmith/cdphe_h5_influenza:~{workflow_version}'
-    String version_capture_docker = 'ariannaesmith/cdphe_wdl_version_capture:v0.1.0'
+    String version_capture_docker = 'ariannaesmith/cdphe_wdl_version_capture:v1.0.0'
 
     Array[Int] indexes = range(length(sample_names))
 
