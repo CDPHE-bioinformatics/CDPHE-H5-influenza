@@ -238,7 +238,7 @@ def calculate_sample_stats(segmented_df, args):
 def main():
     args = get_args()
 
-    bed_df = pd.read_csv(args.primer_bed, sep='\t', header=None)
+    bed_df = pd.read_csv(args.primer_bed, sep='\t', header=None, comment='#')
 
     # Load reference lengths using the BED file and reference sequences
     segment_lengths = calculate_reference_lengths(args.reference_fasta, bed_df)
