@@ -43,6 +43,12 @@
             "reference_fasta": "A_California_07_2009_H1N1_HA-H1.fasta"
         },
         {
+            "name": "Olivar_A_HA-H1_400",
+            "bed": "olivar_A_HA-H1_400_primer.bed",
+            "reference_name": "A_Victoria_4897_2022_H1N1_HA-H1",
+            "reference_fasta": "A_Victoria_4897_2022_H1N1_HA-H1.fasta"
+        },
+        {
             "name": "Olivar_A_HA-H3",
             "bed": "olivar_A_HA-H3_primer.bed",
             "reference_name": "A_Darwin_9_2021_H3N2_HA-H3",
@@ -55,6 +61,12 @@
             "reference_fasta": "A_Wisconsin_67_2005_H3N2_HA-H3.fasta"
         },
         {
+            "name": "Olivar_A_HA-H3_400",
+            "bed": "olivar_A_HA-H3_400_primer.bed",
+            "reference_name": "A_Darwin_9_2021_H3N2_HA-H3",
+            "reference_fasta": "A_Darwin_9_2021_H3N2_HA-H3.fasta"
+        },
+        {
             "name": "Olivar_B_HA",
             "bed": "olivar_B_HA_primer.bed",
             "reference_name": "B_Austria_1359417_2021_vic_HA",
@@ -65,6 +77,12 @@
             "bed": "olivar_B_HA_freyja_liftover_primer.bed",
             "reference_name": "B_Brisbane_60_2008_vic_HA",
             "reference_fasta": "B_Brisbane_60_2008_vic_HA.fasta"
+        },
+        {
+            "name": "Olivar_B_HA_400",
+            "bed": "olivar_B_HA_400_primer.bed",
+            "reference_name": "B_Austria_1359417_2021_vic_HA",
+            "reference_fasta": "B_Austria_1359417_2021_vic_HA.fasta"
         },
         {
             "name": "h5_PB2",

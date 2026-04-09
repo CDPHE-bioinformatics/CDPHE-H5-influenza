@@ -74,10 +74,13 @@ task download_references {
         File h9_HA_bed = "h9_HA_primer.bed"
         File olivar_A_HA_H1_bed = "olivar_A_HA-H1_primer.bed"
         File olivar_A_HA_H1_freyja_liftover_bed = "olivar_A_HA-H1_freyja_liftover_primer.bed"
+        File olivar_A_HA_H1_400_bed = "olivar_A_HA-H1_400_primer.bed"
         File olivar_A_HA_H3_bed = "olivar_A_HA-H3_primer.bed"
         File olivar_A_HA_H3_freyja_liftover_bed = "olivar_A_HA-H3_freyja_liftover_primer.bed"
+        File olivar_A_HA_H3_400_bed = "olivar_A_HA-H3_400_primer.bed"
         File olivar_B_HA_bed = "olivar_B_HA_primer.bed"
         File olivar_B_HA_freyja_liftover_bed = "olivar_B_HA_freyja_liftover_primer.bed"
+        File olivar_B_HA_400_bed = "olivar_B_HA_400_primer.bed"
     }
 
     runtime {
