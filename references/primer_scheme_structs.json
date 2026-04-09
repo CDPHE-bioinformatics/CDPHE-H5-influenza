@@ -25,6 +25,12 @@
             "reference_fasta": "A_Texas_37_2024_H5N1_HA-H5.fasta"
         },
         {
+            "name": "human_h5_250_freyja_liftover",
+            "bed": "human_h5_250_freyja_liftover_primer.bed",
+            "reference_name": "A_Goose_Guangdong_1_1996_HA",
+            "reference_fasta": "A_Goose_Guangdong_1_1996_HA.fasta"
+        },
+        {
             "name": "human_h5_250_spike",
             "bed": "human_h5_250_spike_primer.bed",
             "reference_name": "A_Texas_37_2024_H5N1_HA-H5",
