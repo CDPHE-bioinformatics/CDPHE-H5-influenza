@@ -67,6 +67,24 @@
             "reference_fasta": "A_Wisconsin_67_2005_H3N2_HA-H3.fasta"
         },
         {
+            "name": "Olivar_A_HA-H1_ID_2018_POS",
+            "bed": "olivar_A_HA-H1_ID_2018_POS_primer.bed",
+            "reference_name": "A_Idaho_07_2018_H1N1_HA-H1",
+            "reference_fasta": "A_Idaho_07_2018_H1N1_HA-H1.fasta"
+        },
+        {
+            "name": "Olivar_A_HA-H3_HK_2019_POS",
+            "bed": "olivar_A_HA-H3_HK_2019_POS_primer.bed",
+            "reference_name": "A_HongKong_45_2019_H3N2_HA-H3",
+            "reference_fasta": "A_HongKong_45_2019_H3N2_HA-H3.fasta"
+        },
+        {
+            "name": "Olivar_B_HA_CO_2017_POS",
+            "bed": "olivar_B_HA_CO_2017_POS_primer.bed",
+            "reference_name": "B_Colorado_06_2017_vic_HA",
+            "reference_fasta": "B_Colorado_06_2017_vic_HA.fasta"
+        },
+        {
             "name": "Olivar_A_HA-H3_400",
             "bed": "olivar_A_HA-H3_400_primer.bed",
             "reference_name": "A_Darwin_9_2021_H3N2_HA-H3",
