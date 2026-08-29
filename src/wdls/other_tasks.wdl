@@ -2,6 +2,32 @@ version 1.0
 
 import "structs.wdl"
 
+task check_empty_fastq {
+    input {
+        File fastq1
+        File fastq2
+        String docker
+    }
+
+    meta {
+        volatile: true
+    }
+
+    command <<<
+        fastq1="~{fastq1}"
+        fastq1="~{fastq2}"
+        gunzip -c $fastq1 $fastq2 | wc -l
+    >>>
+
+    output {
+        Boolean has_reads = (read_int(stdout()) / 4) > 0
+    }
+
+    runtime {
+        docker: docker
+    }
+}
+
 task transfer {
     input {
         String out_dir
@@ -10,12 +36,15 @@ task transfer {
         String docker
     }
 
+    Int dynamic_disk_size = ceil(size(task_files, "GiB")) + 1
+    
     command <<<
         cat "~{write_lines(task_files)}" | gsutil -m cp -I "~{out_dir}~{task_dir}/"
     >>>
 
     runtime {
         docker: docker
+        disks: "local-disk ~{dynamic_disk_size} SSD"
     }
 }
 

@@ -25,10 +25,11 @@ The main workflow, `h5_assembly_analysis`, is a set-level workflow that calls al
 | -- | -- | -- |
 | `fastq1s` | `Array[File]` | R1 fastq files |
 | `fastq2s` | `Array[File]` | R2 fastq files |
-| `out_dir` | `String` | Directory prefix to copy files to |
+| `out_dir` | `String` | Directory prefix to copy files to. If blank, no files will be transferred. |
 | `primers` | `Array[String]` | Primer schemes - names must match those in `structs.wdl` |
 | `project_name` | `String` | Sequencing run name |
 | `sample_names` | `Array[String]` | Sample names - must be unique |
+| `sub_dir` | `String?` | Optional subdirectory to add to transfer path if performing. |
 
 ### Subworkflows
 
@@ -52,7 +53,8 @@ The main workflow, `h5_assembly_analysis`, is a set-level workflow that calls al
       - Call `fastp`
       - Call `fastqc_clean`
     - Call `concat_fastqc_summary`
-    - Call `multiqc_fastqc`
+    - Call `multiqc_fastqc_raw`
+    - Call `multiqc_fastqc_clean`
     - Call `multiqc_fastp`
     - Call `other_tasks.transfer`
   - Call `reference_tasks.reference_level_tasks` subworkflow
@@ -68,7 +70,7 @@ The main workflow, `h5_assembly_analysis`, is a set-level workflow that calls al
 - Call `other_tasks.transfer_concat_metrics`
 - Call `version_capture_tasks.capture_versions`
 - Call `other_tasks.transfer_vc` 
-- Output `fastq` raw and cleaned data and summary files, cleaned fastqs, aligments, consensuses, sample and segment metrics, `multiqc` reports, and version capture information.
+- Output `fastq` raw and cleaned data and html files, cleaned fastqs, aligments, consensuses, sample and segment metrics, `multiqc` reports, and version capture information.
 
 ## Docker container
 
@@ -87,8 +89,11 @@ The docker container specific to this workflow is located at [ariannaesmith/cdph
 | `h7_HA_primer.bed` | `h7_HA_consensus.fasta` | Tiled - HA gene - H7 | made in-house with [PrimalScheme](https://primalscheme.com/) |
 | `h9_HA_primer.bed` | `h9_HA_consensus.fasta` | Tiled - HA gene - H9 | made in-house with [PrimalScheme](https://primalscheme.com/) |
 | `olivar_A_HA-H1_primer.bed` | `A_Victoria_4897_2022_H1N1_HA-H1.fasta` | Tiled - HA gene - H1N1 | Made in-house with [Olivar](https://github.com/treangenlab/Olivar) |
+| `olivar_A_HA-H1_freyja_liftover_primer.bed` | `A_California_07_2009_H1N1_HA-H1.fasta` | Performed liftover for use with freyja | See above row  |
 | `olivar_A_HA-H3_primer.bed` | `A_Darwin_9_2021_H3N2_HA-H3.fasta` | Tiled - HA gene - H3N2 | Made in-house with [Olivar](https://github.com/treangenlab/Olivar) |
+| `olivar_A_HA-H3_freyja_liftover_primer.bed` | `A_Wisconsin_67_2005_H3N2_HA-H3.fasta` | Performed liftover for use with freyja | See above row |
 | `olivar_B_HA_primer.bed` | `B_Austria_1359417_2021_vic_HA.fasta` | Tiled - HA gene - B/Victoria | Made in-house with [Olivar](https://github.com/treangenlab/Olivar) |
+| `olivar_B_HA_freyja_liftover_primer.bed` | `B_Brisbane_60_2008_vic_HA.fasta` | Performed liftover for use with freyja | See above row |
 
 ### Python scripts
 

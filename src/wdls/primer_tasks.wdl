@@ -60,11 +60,20 @@ workflow primer_level_tasks {
             docker = h5_docker
     }
 
-    call ot.multiqc as multiqc_fastqc {
+    call ot.multiqc as multiqc_fastqc_raw {
         input:
-            files = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data,
-                            fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
+            files = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data]),
             module = "fastqc",
+            task_name = "raw",
+            cl_config = "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }",
+            docker = multiqc_docker
+    }
+
+    call ot.multiqc as multiqc_fastqc_clean {
+        input:
+            files = flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data]),
+            module = "fastqc",
+            task_name = "clean",
             cl_config = "sp: { fastqc/data: { fn: '*_fastqc_data.txt' } }",
             docker = multiqc_docker
     }
@@ -77,10 +86,10 @@ workflow primer_level_tasks {
     }
     
     # Transfer primer level files
-    Array[File] fastqc_raw_output = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc2_data])
-    Array[File] fastqc_clean_output = flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc2_data])
+    Array[File] fastqc_raw_output = flatten([fastqc_raw.fastqc1_data, fastqc_raw.fastqc1_html, fastqc_raw.fastqc2_data, fastqc_raw.fastqc2_html])
+    Array[File] fastqc_clean_output = flatten([fastqc_clean.fastqc1_data, fastqc_clean.fastqc1_html, fastqc_clean.fastqc2_data, fastqc_clean.fastqc2_html])
     Array[File] fastp_output = flatten([fastp.fastq_1_cleaned, fastp.fastq_2_cleaned])
-    Array[File] p_summary_output = [multiqc_fastqc.html_report, multiqc_fastp.html_report, concat_fastqc_summary.fastqc_summary]
+    Array[File] p_summary_output = [multiqc_fastqc_raw.html_report, multiqc_fastqc_clean.html_report, multiqc_fastp.html_report, concat_fastqc_summary.fastqc_summary]
 
     Array[String] primer_task_dirs = ["fastqc_raw", "fastqc_clean", "fastp", "summary_results"]
     Array[Array[File]] primer_task_files = [fastqc_raw_output, fastqc_clean_output, fastp_output, p_summary_output]       
@@ -107,7 +116,7 @@ workflow primer_level_tasks {
         File fastqc_summary = concat_fastqc_summary.fastqc_summary
         VersionInfo fastqc_version = fastqc_raw.version_info[0]
         VersionInfo fastp_version = fastp.version_info[0]
-        VersionInfo multiqc_version = multiqc_fastqc.version_info
+        VersionInfo multiqc_version = multiqc_fastqc_raw.version_info
         VersionInfo h5_docker_version = concat_fastqc_summary.version_info
     }
 }
@@ -125,15 +134,21 @@ task fastqc {
 
     String fastq1_name = basename(fastq1, ".fastq.gz")
     String fastq2_name = basename(fastq2, ".fastq.gz")
-    String fastq1_data_name = "~{fastq1_name}_fastqc_data.txt"
-    String fastq2_data_name = "~{fastq2_name}_fastqc_data.txt"
+    String fastq1_string = "~{fastq1_name}_fastqc"
+    String fastq2_string = "~{fastq2_name}_fastqc"
+    String fastq1_data = "~{fastq1_string}_data.txt"
+    String fastq2_data = "~{fastq2_string}_data.txt"
+    String fastq1_html = "~{fastq1_string}_report.html"
+    String fastq2_html = "~{fastq2_string}_report.html"
     String summary_metrics_fn = "~{sample_name}_~{fastq_type}_summary_metrics.csv"
 
     command <<<
         fastqc --outdir $PWD --extract --delete ~{fastq1} ~{fastq2}
         fastqc --version | awk '{print $2}' | tee VERSION  
-        cp "~{fastq1_name}_fastqc/fastqc_data.txt" ~{fastq1_data_name}
-        cp "~{fastq2_name}_fastqc/fastqc_data.txt" ~{fastq2_data_name}
+        mv "~{fastq1_string}/fastqc_data.txt" ~{fastq1_data}
+        mv "~{fastq1_string}/fastqc_report.html" ~{fastq1_html}
+        mv "~{fastq2_string}/fastqc_data.txt" ~{fastq2_data}
+        mv "~{fastq2_string}/fastqc_report.html" ~{fastq2_html}
 
         # Summarize output to simpler csv file
         summarize_fastqc () {
@@ -143,17 +158,19 @@ task fastqc {
             echo $total_seqs,$flagged_reads,$sequence_length
         }
 
-        fastq1_data_name="~{fastq1_data_name}"
-        fastq2_data_name="~{fastq2_data_name}"
-        r1_info=$(summarize_fastqc ${fastq1_data_name})
-        r2_info=$(summarize_fastqc ${fastq2_data_name})
+        fastq1_data="~{fastq1_data}"
+        fastq2_data="~{fastq2_data}"
+        r1_info=$(summarize_fastqc ${fastq1_data})
+        r2_info=$(summarize_fastqc ${fastq2_data})
         echo "sample_name,project_name,primer_name,r1_total_reads,r1_flagged_reads_as_poor_quality,r1_read_len,r2_total_reads,r2_flagged_reads_as_poor_quality,r2_read_len" >> ~{summary_metrics_fn} 
         echo "~{sample_name},~{project_name},~{primer_name},${r1_info},${r2_info}" >> ~{summary_metrics_fn}
     >>>
 
     output {
-        File fastqc1_data = fastq1_data_name
-        File fastqc2_data = fastq2_data_name
+        File fastqc1_data = fastq1_data
+        File fastqc1_html = fastq1_html
+        File fastqc2_data = fastq2_data
+        File fastqc2_html = fastq2_html
         File summary_metrics = summary_metrics_fn
         String version = read_string('VERSION')
         VersionInfo version_info = {

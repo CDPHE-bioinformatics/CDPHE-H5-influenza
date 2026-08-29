@@ -1,7 +1,7 @@
 version 1.0
 
 import "structs.wdl" as initializations
-import "https://raw.githubusercontent.com/CDPHE-bioinformatics/wdl-shared/b59cb189af2149f00ac0ad04eb3e0813d1cc3971/version_capture_tasks.wdl" as vc
+import "https://raw.githubusercontent.com/CDPHE-bioinformatics/wdl-shared/dba3e70cee747617bacbd0312d1de2f6b0731de3/version_capture_tasks.wdl" as vc
 import "reference_tasks.wdl" as rt
 import "primer_tasks.wdl" as pt
 import "other_tasks.wdl" as ot
@@ -14,21 +14,23 @@ workflow h5_assembly_analysis {
         Array[File] fastq2s
         String project_name
         String out_dir = ""
+        String? sub_dir
     }
 
     # private declarations
+    
+    String workflow_name = 'h5_assembly_analysis'
+    String workflow_version = 'v1.2.0'
+    String workflow_version_und = sub(workflow_version, "\\.", "_")
+
     String fastqc_docker = 'staphb/fastqc:0.12.1'
     String fastp_docker = 'staphb/fastp:0.23.2'
     String ivar_docker = 'staphb/ivar:1.4.4-aligners'
     String multiqc_docker = 'multiqc/multiqc:v1.24'
     String ubuntu_docker = 'ubuntu:jammy-20240627.1'
     String utility_docker = 'theiagen/utility:1.0'
-    String h5_docker = 'ariannaesmith/cdphe_h5_influenza:v1.0.0'
-    String version_capture_docker = 'ariannaesmith/cdphe_wdl_version_capture:v0.1.0'
-    
-    String workflow_name = 'h5_assembly_analysis'
-    String workflow_version = 'v1.0.0'
-    String workflow_version_und = sub(workflow_version, "\\.", "_")
+    String h5_docker = 'ariannaesmith/cdphe_h5_influenza:~{workflow_version}'
+    String version_capture_docker = 'ariannaesmith/cdphe_wdl_version_capture:v1.0.0'
 
     Array[Int] indexes = range(length(sample_names))
 
@@ -41,7 +43,8 @@ workflow h5_assembly_analysis {
     }
 
     Boolean transfer_results = (out_dir != "")
-    String project_outdir = if transfer_results then (sub(out_dir, "/$", "") + "/" +  project_name + "/terra_outputs/" + workflow_version_und + "/") else ""
+    Boolean optional_subdir = defined(sub_dir)
+    String project_outdir = if transfer_results then (sub(out_dir, "/$", "") + "/" +  project_name + (if optional_subdir then "/" + sub_dir else "") + "/terra_outputs/" + workflow_version_und + "/") else ""
 
     # Struct initilizations (subworkflow)
     call initializations.declare_structs as ini { input: h5_docker = h5_docker}
@@ -64,13 +67,28 @@ workflow h5_assembly_analysis {
         scatter (all_samp in samples) {
             if (all_samp.primer == ps.name) {
                 # Only add to list if fastqs are not empty
-                Float fastqs_size = size([all_samp.fastq1, all_samp.fastq2], "MiB")
-                if (fastqs_size > 1) {
+                Float fastqs_size = size([all_samp.fastq1, all_samp.fastq2], "KiB")
+                # For small files, specifically check the number of reads
+                if (fastqs_size <= 1) {
+                    call ot.check_empty_fastq as num_reads {
+                        input:
+                            fastq1 = all_samp.fastq1,
+                            fastq2 = all_samp.fastq2,
+                            docker = ubuntu_docker
+                    }
+                }
+                Boolean reads_bool = select_first([num_reads.has_reads, true])
+                if ((fastqs_size > 1) || reads_bool) {
                     Sample primer_sample = all_samp
+                }
+                # Keep track of samples with empty fastqs
+                if (reads_bool == false) {
+                    String empty_fastq_primer_sample = all_samp.name
                 }
             }
         }
         Array[Sample] primer_samples = select_all(primer_sample)
+        Array[String] empty_fastq_primer_samples = select_all(empty_fastq_primer_sample)
         
         # Only call downstream tasks if primer was used
         if (length(primer_samples) > 0) {
@@ -179,6 +197,7 @@ workflow h5_assembly_analysis {
         Array[Array[File]] primers_ref_summary_outputs = select_all(r_sub.summary_outputs)
         Array[File] concatenated_summary_outputs = [concat_metrics.segment_summary, concat_metrics.sample_summary]
         File version_capture = version_cap.output_file
+        Array[Array[String]] empty_fastq_samples = select_all(empty_fastq_primer_samples)
     }    
 }
 
